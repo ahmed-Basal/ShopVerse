@@ -1,0 +1,29 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Local configuration / secrets
+*.env
+env.config
+**/env.config
+web api/env.config
+
+# Angular / build outputs
+.angular/
+dist/
+**/dist/
+.tmp/
+.sass-cache/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Uploads and temporary files
+web api/uploads/
+scratch/

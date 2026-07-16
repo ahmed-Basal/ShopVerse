@@ -1,0 +1,15 @@
+/* ============================================================
+   USER-LAYOUT — Dark Theme
+   ============================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--clr-bg-base);
+  color: var(--clr-text-primary);
+
+  /* Push footer to bottom */
+  > router-outlet + * {
+    flex: 1;
+  }
+}

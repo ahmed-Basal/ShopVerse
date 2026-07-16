@@ -1,0 +1,278 @@
+<section>
+  <div class="container">
+    <div class="grid align-items-center pb-5">
+      <div class="md:col-6">
+        <figure>
+          <img
+            class="w-full"
+            [src]="productDetails.image"
+            [alt]="productDetails.title"
+          />
+        </figure>
+      </div>
+      <div class="md:col-6">
+        <p class="font-medium mt-1 mb-3 text-color-secondary">
+          {{ productDetails.title }}
+        </p>
+
+        <p class="font-medium text-sm my-1">
+          {{ productDetails.description }}
+        </p>
+        <div class="flex align-items-center gap-2 mb-4">
+          <div class="price flex gap-2 align-items-center">
+            @if (appliedCoupon) {
+              <span class="text-color-secondary font-bold">
+                <del>${{ productDetails.price }}</del>
+              </span>
+              <span class="new-price font-bold text-green-500">
+                ${{ appliedCoupon.discountedPrice }}
+              </span>
+            } @else {
+              <span class="text-color-secondary font-bold">
+                <del>14</del>
+              </span>
+              <span class="new-price font-bold">
+                <span class="text-green-400">$</span> {{ productDetails.price }}
+              </span>
+            }
+          </div>
+          <div class="offer">
+            @if (appliedCoupon) {
+              <span class="bg-red-500 p-1 border-circle text-white text-xs"
+                >%{{ appliedCoupon.discount }}</span
+              >
+              <span class="font-bold text-xs font-bold px-1 text-red-500">coupon off</span>
+            } @else {
+              <span class="bg-red-500 p-1 border-circle text-white text-xs"
+                >%{{ productDetails.discount }}</span
+              >
+              <span class="fonot-bold text-xs font-bold px-1">off</span>
+            }
+          </div>
+        </div>
+        <div>
+          <div
+            class="flex align-items-center justify-content-between capitalize"
+          >
+            <p class="text-color-secondary my-1">brand:</p>
+            <p class="font-bold text-orange-500 my-1">
+              {{ productDetails.brand }}
+            </p>
+          </div>
+          <div
+            class="flex align-items-center justify-content-between capitalize"
+          >
+            <p class="text-color-secondary my-1">model:</p>
+            <p class="font-bold text-orange-500 my-1">
+              {{ productDetails.model }}
+            </p>
+          </div>
+          <div
+            class="flex align-items-center justify-content-between capitalize"
+          >
+            <p class="text-color-secondary my-1">color:</p>
+            <p class="font-bold text-orange-500 my-1">
+              {{ productDetails.color }}
+            </p>
+          </div>
+          <div
+            class="flex align-items-center justify-content-between capitalize"
+          >
+            <p class="text-color-secondary my-1">category:</p>
+            <p class="font-bold text-orange-500 my-1">
+              {{ productDetails.category }}
+            </p>
+          </div>
+          <div
+            class="flex align-items-center justify-content-between capitalize"
+          >
+            <p class="text-color-secondary my-1">discount:</p>
+            <p class="font-bold text-orange-500 my-1">
+              {{ productDetails.discount }}
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-2 align-items-center w-full my-2">
+          @if (!productDetails.isAddedToCart) {
+          <div class="flex-1">
+            <p-button
+              (click)="
+                addToCart(productDetails); productDetails.isAddedToCart = true
+              "
+              label="add to cart"
+              severity="warning"
+              styleClass="uppercase w-full"
+              icon="pi pi-cart-plus text-2xl"
+              iconPos="right"
+            />
+          </div>
+          } @if (productDetails.isAddedToCart) {
+          <div class="flex-1">
+            <p-button
+              [routerLink]="['/cart']"
+              label="go to cart"
+              severity="contrast"
+              styleClass="uppercase w-full"
+              icon="pi pi-shopping-cart text-2xl"
+              iconPos="right"
+            />
+          </div>
+          }
+          <button type="button" 
+                  class="w-3rem h-3rem border-round-xl border-1 border-200 shadow-1 bg-white flex align-items-center justify-content-center cursor-pointer hover:bg-50 flex-shrink-0"
+                  style="transition: all 0.2s; height: 46px;"
+                  (click)="toggleWishlist($event)"
+                  [title]="isInWishlist ? 'Remove from Favorites' : 'Add to Favorites'">
+            <i class="pi text-2xl" 
+               [class.pi-heart-fill]="isInWishlist" 
+               [class.pi-heart]="!isInWishlist"
+               [class.text-red-500]="isInWishlist"
+               [class.text-500]="!isInWishlist"></i>
+          </button>
+        </div>
+        
+        <!-- Coupon Form Section -->
+        <div class="coupon-section mt-4 pt-3 border-top-1 border-200">
+          <h4 class="text-sm font-bold text-900 mb-2"><i class="pi pi-ticket text-primary mr-1"></i> Apply Coupon</h4>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              class="p-2 border-1 border-200 border-round-lg flex-1 text-sm"
+              placeholder="Enter coupon code"
+              [(ngModel)]="couponCode"
+              [disabled]="couponLoading"
+              (keydown.enter)="applyCoupon()"
+            />
+            <button
+              type="button"
+              class="btn-primary py-2 px-4 text-xs font-bold flex align-items-center justify-content-center"
+              style="height: 38px; min-width: 90px;"
+              [disabled]="couponLoading || !couponCode.trim()"
+              (click)="applyCoupon()"
+            >
+              @if (couponLoading) {
+                <i class="pi pi-spin pi-spinner mr-1"></i> Applying...
+              } @else {
+                Apply
+              }
+            </button>
+          </div>
+          @if (couponError) {
+            <p class="text-xs text-red-500 mt-2 mb-0 flex align-items-center gap-1">
+              <i class="pi pi-exclamation-circle"></i>
+              <span>{{ couponError }}</span>
+            </p>
+          }
+          @if (appliedCoupon) {
+            <p class="text-xs text-green-500 mt-2 mb-0 flex align-items-center gap-1">
+              <i class="pi pi-check-circle"></i>
+              <span>Coupon applied! Saved ${{ (productDetails.price - appliedCoupon.discountedPrice) | number:'1.2-2' }} ({{ appliedCoupon.discount }}% off)</span>
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="grid pt-6 mt-5 border-top-1 border-200">
+      <!-- Add Review Form -->
+      <div class="col-12 md:col-5">
+        <div class="p-4 border-round-xl border-1 border-200 bg-50">
+          <h3 class="text-xl font-bold text-900 mt-0 mb-3"><i class="pi pi-comment text-primary mr-1"></i> Write a Review</h3>
+          
+          @if (isLoggedIn) {
+            <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="flex flex-column gap-3">
+              <div class="flex flex-column gap-1">
+                <label class="font-semibold text-xs text-700">Rating Stars</label>
+                <div class="flex gap-2 align-items-center">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <i class="pi cursor-pointer text-xl" 
+                       [class.pi-star-fill]="star <= reviewForm.get('ratings')?.value"
+                       [class.pi-star]="star > reviewForm.get('ratings')?.value"
+                       [class.text-yellow-500]="star <= reviewForm.get('ratings')?.value"
+                       [class.text-400]="star > reviewForm.get('ratings')?.value"
+                       (click)="reviewForm.get('ratings')?.setValue(star)"></i>
+                  }
+                </div>
+              </div>
+
+              <div class="flex flex-column gap-1">
+                <label class="font-semibold text-xs text-700">Review Message</label>
+                <textarea formControlName="title" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="Share your experience with this product..." rows="4"></textarea>
+                @if (reviewForm.get('title')?.touched && reviewForm.get('title')?.invalid) {
+                  <span class="text-xs text-red-500">Please enter a review of at least 3 characters.</span>
+                }
+              </div>
+
+              <button type="submit" class="btn-primary w-full py-2.5 font-bold" [disabled]="submittingReview">
+                @if (submittingReview) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i> Posting...
+                } @else {
+                  Submit Review
+                }
+              </button>
+            </form>
+          } @else {
+            <div class="text-center py-4">
+              <i class="pi pi-lock text-4xl text-400 mb-2"></i>
+              <p class="text-color-secondary text-sm mb-3">You must be logged in to leave a review.</p>
+              <button type="button" class="btn-primary py-2 px-4 text-xs font-bold" [routerLink]="['/login']">Log In</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Reviews Listing -->
+      <div class="col-12 md:col-7 pl-0 md:pl-4 mt-4 md:mt-0">
+        <h3 class="text-xl font-bold text-900 mt-0 mb-4 flex align-items-center gap-2">
+          <span>Customer Reviews</span>
+          @if (productDetails.ratingsAverage) {
+            <span class="text-sm font-semibold text-color-secondary bg-100 px-2 py-0.5 border-round-md">
+              <i class="pi pi-star-fill text-yellow-500 mr-1"></i>{{ productDetails.ratingsAverage }} ({{ productDetails.ratingsQuantity || 0 }} reviews)
+            </span>
+          }
+        </h3>
+
+        @if (reviewsList.length > 0) {
+          <div class="flex flex-column gap-3">
+            @for (rev of reviewsList; track rev._id) {
+              <div class="p-3 border-round-xl border-1 border-100 bg-white">
+                <div class="flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <span class="font-bold text-sm text-900 capitalize">{{ rev.user?.name || 'Anonymous User' }}</span>
+                    <div class="flex gap-1 align-items-center mt-1">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <i class="pi pi-star-fill text-xs" 
+                           [class.text-yellow-500]="star <= rev.ratings"
+                           [class.text-200]="star > rev.ratings"></i>
+                      }
+                    </div>
+                  </div>
+                  <span class="text-xs text-500">{{ rev.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <p class="text-sm text-800 m-0 line-height-3">{{ rev.title }}</p>
+              </div>
+            }
+
+            @if (hasMoreReviews) {
+              <div class="text-center mt-2">
+                <button type="button" class="btn-secondary py-2 px-4 text-xs font-bold" (click)="loadMoreReviews()">
+                  @if (reviewsLoading) {
+                    <i class="pi pi-spin pi-spinner mr-1"></i> Loading...
+                  } @else {
+                    Load More Reviews
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center py-6 border-round-xl border-1 border-dashed border-200 bg-white">
+            <i class="pi pi-comments text-5xl text-300 mb-2"></i>
+            <p class="text-color-secondary m-0">No reviews yet. Be the first to review this product!</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

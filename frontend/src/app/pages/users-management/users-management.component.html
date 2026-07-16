@@ -1,0 +1,72 @@
+<div class="users-management">
+  <h1 class="page-title">Users Management</h1>
+
+  @if (loading && users.length === 0) {
+  <div class="loading-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Loading user list...</p>
+  </div>
+  } @else {
+  <div class="section-card">
+    @if (users.length > 0) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user._id) {
+          <tr>
+            <td class="user-id">{{ user._id | slice : -8 }}</td>
+            <td class="user-name">{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span
+                class="role-badge"
+                [class.role-admin]="user.role === 'admin'"
+                [class.role-manager]="user.role === 'manager'"
+                [class.role-user]="user.role === 'user'"
+              >
+                {{ user.role }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="user.active"
+                [class.badge-danger]="!user.active"
+              >
+                {{ user.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>{{ user.createdAt | date : 'mediumDate' }}</td>
+            <td>
+              <div class="action-buttons">
+                @if (user.role !== 'admin') {
+                <button class="action-btn delete-btn" (click)="deleteUser(user._id)" title="Deactivate User">
+                  <i class="pi pi-user-minus"></i>
+                </button>
+                } @else {
+                <span class="system-text">System</span>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="empty-state">No users found.</p>
+    }
+  </div>
+  }
+</div>

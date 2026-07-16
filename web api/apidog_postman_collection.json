@@ -1,0 +1,948 @@
+{
+  "info": {
+    "_postman_id": "apidog-ecommerce-api-keys-collection-full",
+    "name": "E-Commerce Complete API (Postman Format)",
+    "description": "Full Postman Collection featuring all modules (Auth, API Keys, Products, Categories, Subcategories, Brands, Cart, Coupons, Orders, Wishlist, Addresses, Users) with preconfigured Bearer and API Key authentication.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Saad\",\n  \"email\": \"ahmed.test@gmail.com\",\n  \"password\": \"password123\",\n  \"passwordConfirm\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/signup",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed.test@gmail.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Keys",
+      "item": [
+        {
+          "name": "Create API Key",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{JWT_TOKEN}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mobile App Read-Only Key\",\n  \"expiresAt\": \"2027-12-31T23:59:59.000Z\",\n  \"permissions\": [\n    {\n      \"route\": \"/api/v1/products\",\n      \"methods\": [\"GET\"]\n    },\n    {\n      \"route\": \"/api/v1/categories\",\n      \"methods\": [\"GET\"]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/apikeys",
+              "host": ["{{BASE_URL}}"],
+              "path": ["apikeys"]
+            }
+          }
+        },
+        {
+          "name": "Get my API Keys",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{JWT_TOKEN}}", "type": "string" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/apikeys",
+              "host": ["{{BASE_URL}}"],
+              "path": ["apikeys"]
+            }
+          }
+        },
+        {
+          "name": "Delete API Key",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{JWT_TOKEN}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/apikeys/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["apikeys", ":id"],
+              "variable": [
+                { "key": "id", "value": "api_key_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/products",
+              "host": ["{{BASE_URL}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/products/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["products", ":id"],
+              "variable": [
+                { "key": "id", "value": "product_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Adidas Ultraboost\",\n  \"description\": \"Premium comfortable running shoes.\",\n  \"quantity\": 100,\n  \"price\": 180,\n  \"category\": \"61b2a9d869d54640ca3d7293\",\n  \"brand\": \"61b2a9d869d54640ca3d7294\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/products",
+              "host": ["{{BASE_URL}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 175,\n  \"quantity\": 90\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/products/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["products", ":id"],
+              "variable": [
+                { "key": "id", "value": "product_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/products/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["products", ":id"],
+              "variable": [
+                { "key": "id", "value": "product_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/categories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/categories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                { "key": "id", "value": "category_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Smart Electronics\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/categories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Consumer Electronics\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/categories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                { "key": "id", "value": "category_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/categories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                { "key": "id", "value": "category_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subcategories",
+      "item": [
+        {
+          "name": "Get All Subcategories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/subcategories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["subcategories"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Subcategory",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/subcategories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["subcategories", ":id"],
+              "variable": [
+                { "key": "id", "value": "subcategory_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Subcategory",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Smartphones\",\n  \"category\": \"61b2a9d869d54640ca3d7293\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/subcategories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["subcategories"]
+            }
+          }
+        },
+        {
+          "name": "Update Subcategory",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gaming Smartphones\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/subcategories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["subcategories", ":id"],
+              "variable": [
+                { "key": "id", "value": "subcategory_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Subcategory",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/subcategories/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["subcategories", ":id"],
+              "variable": [
+                { "key": "id", "value": "subcategory_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "Get All Brands",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/brands",
+              "host": ["{{BASE_URL}}"],
+              "path": ["brands"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Brand",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/brands/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["brands", ":id"],
+              "variable": [
+                { "key": "id", "value": "brand_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Brand",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nike\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/brands",
+              "host": ["{{BASE_URL}}"],
+              "path": ["brands"]
+            }
+          }
+        },
+        {
+          "name": "Update Brand",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nike Premium\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/brands/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["brands", ":id"],
+              "variable": [
+                { "key": "id", "value": "brand_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Brand",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/brands/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["brands", ":id"],
+              "variable": [
+                { "key": "id", "value": "brand_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get User Cart",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/cart",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart"]
+            }
+          }
+        },
+        {
+          "name": "Add Product to Cart",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"61b2a9d869d54640ca3d7295\",\n  \"color\": \"Black\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cart",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart"]
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/cart",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart"]
+            }
+          }
+        },
+        {
+          "name": "Apply Coupon",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponName\": \"SUMMER50\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cart/applyCoupon",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart", "applyCoupon"]
+            }
+          }
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/cart/:itemId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart", ":itemId"],
+              "variable": [
+                { "key": "itemId", "value": "cart_item_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{BASE_URL}}/cart/:itemId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["cart", ":itemId"],
+              "variable": [
+                { "key": "itemId", "value": "cart_item_id_here" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "item": [
+        {
+          "name": "Get All Coupons",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/coupons",
+              "host": ["{{BASE_URL}}"],
+              "path": ["coupons"]
+            }
+          }
+        },
+        {
+          "name": "Create Coupon",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SUMMER50\",\n  \"expire\": \"2027-12-31\",\n  \"discount\": 20\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/coupons",
+              "host": ["{{BASE_URL}}"],
+              "path": ["coupons"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Cash Order",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"details\": \"Sheraton El-Nozha\",\n    \"phone\": \"01234567890\",\n    \"city\": \"Cairo\",\n    \"postalCode\": \"11799\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/orders/:cartId",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders", ":cartId"],
+              "variable": [
+                { "key": "cartId", "value": "cart_id_here" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/orders",
+              "host": ["{{BASE_URL}}"],
+              "path": ["orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/wishlist",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wishlist"]
+            }
+          }
+        },
+        {
+          "name": "Add Product to Wishlist",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"61b2a9d869d54640ca3d7295\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/wishlist",
+              "host": ["{{BASE_URL}}"],
+              "path": ["wishlist"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Addresses",
+      "item": [
+        {
+          "name": "Get Addresses",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/addresses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["addresses"]
+            }
+          }
+        },
+        {
+          "name": "Add Address",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alias\": \"Home\",\n  \"details\": \"Sheraton El-Nozha\",\n  \"phone\": \"01234567890\",\n  \"city\": \"Cairo\",\n  \"postalCode\": \"11799\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/addresses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["addresses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Logged In User Profile",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/users/getMe",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users", "getMe"]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                { "key": "value", "value": "{{API_KEY}}", "type": "string" },
+                { "key": "key", "value": "x-api-key", "type": "string" },
+                { "key": "in", "value": "header", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/users",
+              "host": ["{{BASE_URL}}"],
+              "path": ["users"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "your_jwt_bearer_token_here",
+      "type": "string"
+    },
+    {
+      "key": "API_KEY",
+      "value": "your_generated_api_key_here",
+      "type": "string"
+    }
+  ]
+}

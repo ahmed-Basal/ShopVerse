@@ -1,0 +1,69 @@
+<div class="admin-wrapper" [class.sidebar-collapsed]="!sidebarOpen">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <img src="./assets/logo.svg" alt="logo" class="sidebar-logo" />
+      <span class="sidebar-title" *ngIf="sidebarOpen">E-Commerce</span>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <i class="pi" [ngClass]="sidebarOpen ? 'pi-angle-left' : 'pi-angle-right'"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <i class="pi pi-chart-bar"></i>
+        <span *ngIf="sidebarOpen">Dashboard</span>
+      </a>
+      <a routerLink="/dashboard/products" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-box"></i>
+        <span *ngIf="sidebarOpen">Products</span>
+      </a>
+      <a routerLink="/dashboard/categories" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-th-large"></i>
+        <span *ngIf="sidebarOpen">Categories</span>
+      </a>
+      <a routerLink="/dashboard/orders" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-shopping-cart"></i>
+        <span *ngIf="sidebarOpen">Orders</span>
+      </a>
+      <a routerLink="/dashboard/users" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-users"></i>
+        <span *ngIf="sidebarOpen">Users</span>
+      </a>
+      <a routerLink="/dashboard/coupons" routerLinkActive="active" class="nav-item">
+        <i class="pi pi-ticket"></i>
+        <span *ngIf="sidebarOpen">Coupons</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/home" class="nav-item">
+        <i class="pi pi-globe"></i>
+        <span *ngIf="sidebarOpen">View Store</span>
+      </a>
+      <a (click)="logout()" class="nav-item logout-item">
+        <i class="pi pi-sign-out"></i>
+        <span *ngIf="sidebarOpen">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <i class="pi pi-bars"></i>
+      </button>
+      <div class="topbar-right">
+        <span class="admin-badge">Admin Panel</span>
+        <span class="admin-user">
+          <i class="pi pi-user"></i>
+          {{ username }}
+        </span>
+      </div>
+    </header>
+    <div class="admin-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

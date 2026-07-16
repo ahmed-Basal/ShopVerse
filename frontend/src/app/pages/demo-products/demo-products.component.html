@@ -1,0 +1,139 @@
+<div class="demo-products-page">
+  <div class="container">
+    
+    <!-- Header Section -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="page-title">Products Showcase</h1>
+        <p class="text-muted">A beautiful products listing with dynamic local search, sort, and coupon rules.</p>
+      </div>
+    </div>
+
+    <!-- Filter & Coupon Panel -->
+    <div class="controls-card p-4 mb-5">
+      <div class="row g-3 align-items-end">
+        
+        <!-- Search Field -->
+        <div class="col-12 col-md-4">
+          <label class="form-label font-semibold small text-muted text-uppercase mb-2">Search Products</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="pi pi-search"></i></span>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              placeholder="Search by name..."
+              class="form-control bg-light border-start-0 ps-0"
+            />
+          </div>
+        </div>
+
+        <!-- Sort Control -->
+        <div class="col-12 col-md-3">
+          <label class="form-label font-semibold small text-muted text-uppercase mb-2">Sort By Price</label>
+          <select [(ngModel)]="sortOption" class="form-select bg-light">
+            <option value="none">Default (Relevance)</option>
+            <option value="low-to-high">Price: Low to High</option>
+            <option value="high-to-low">Price: High to Low</option>
+          </select>
+        </div>
+
+        <!-- Coupon Field -->
+        <div class="col-12 col-md-5">
+          <label class="form-label font-semibold small text-muted text-uppercase mb-2">Apply Promo Code</label>
+          <div class="input-group">
+            <input
+              type="text"
+              [(ngModel)]="couponCode"
+              placeholder="e.g. DISCOUNT20"
+              class="form-control bg-light"
+              [disabled]="couponApplied"
+            />
+            @if (!couponApplied) {
+              <button
+                type="button"
+                class="btn btn-primary px-4"
+                [disabled]="!couponCode.trim()"
+                (click)="applyCoupon()"
+              >
+                Apply Coupon
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-danger px-4"
+                (click)="removeCoupon()"
+              >
+                Remove
+              </button>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Coupon Messages -->
+      @if (couponSuccessMsg) {
+        <div class="alert alert-success mt-3 mb-0 py-2 d-flex align-items-center gap-2 small">
+          <i class="pi pi-check-circle"></i>
+          <span>{{ couponSuccessMsg }}</span>
+        </div>
+      }
+      @if (couponErrorMsg) {
+        <div class="alert alert-danger mt-3 mb-0 py-2 d-flex align-items-center gap-2 small">
+          <i class="pi pi-exclamation-circle"></i>
+          <span>{{ couponErrorMsg }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row g-4">
+      @for (prod of filteredProducts; track prod.id) {
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="product-card">
+            
+            <!-- Card Image -->
+            <div class="image-wrapper">
+              <!-- Discount overlay badge -->
+              @if (prod.discountApplied && prod.discountApplied > 0) {
+                <span class="badge-discount">-{{ prod.discountApplied }}% OFF</span>
+              }
+              @if (prod.isEligibleForDiscount) {
+                <span class="badge-eligible">Eligible for Coupon</span>
+              }
+              <img [src]="prod.image" [alt]="prod.title" />
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+              <div>
+                <h3 class="product-title">{{ prod.title }}</h3>
+                <p class="product-description">{{ prod.description }}</p>
+              </div>
+
+              <!-- Price section -->
+              <div class="price-wrapper">
+                @if (prod.discountedPrice && prod.discountedPrice < prod.price) {
+                  <span class="discounted-price">${{ prod.discountedPrice.toFixed(2) }}</span>
+                  <span class="original-price strikethrough">${{ prod.price.toFixed(2) }}</span>
+                } @else {
+                  <span class="original-price">${{ prod.price.toFixed(2) }}</span>
+                }
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      } @empty {
+        <!-- Empty list fallback -->
+        <div class="col-12 text-center py-5">
+          <i class="pi pi-search text-muted display-4 mb-3 d-block"></i>
+          <h4 class="text-dark font-bold">No products found</h4>
+          <p class="text-muted">Try adjusting your search keywords.</p>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

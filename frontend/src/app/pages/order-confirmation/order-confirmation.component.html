@@ -1,0 +1,43 @@
+<section class="py-8 bg-50 min-h-screen flex align-items-center justify-content-center">
+  <div class="container max-w-30rem">
+    <div class="card p-5 border-round-2xl border-1 border-200 bg-white shadow-2 text-center">
+      
+      @if (loading) {
+        <div>
+          <i class="pi pi-spin pi-spinner text-6xl text-primary mb-3"></i>
+          <h2 class="text-2xl font-bold text-900 mb-2">Verifying Payment</h2>
+          <p class="text-color-secondary m-0">Please wait while we confirm your Stripe checkout transaction with our servers...</p>
+        </div>
+      } @else {
+        @if (paymentConfirmed) {
+          <div>
+            <div class="w-5rem h-5rem bg-green-100 border-circle flex align-items-center justify-content-center mx-auto mb-4">
+              <i class="pi pi-check text-4xl text-green-600"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-900 mb-2">Payment Confirmed!</h2>
+            <p class="text-color-secondary mb-4">Your Stripe payment was successfully verified. Order #{{ latestOrder?._id }} has been created and is now processing.</p>
+            
+            <div class="flex flex-column sm:flex-row gap-2 justify-content-center">
+              <button type="button" class="btn-primary py-3 px-4" [routerLink]="['/profile']">Go to Order History</button>
+              <button type="button" class="btn-secondary py-3 px-4" [routerLink]="['/home']">Back to Store</button>
+            </div>
+          </div>
+        } @else {
+          <div>
+            <div class="w-5rem h-5rem bg-yellow-100 border-circle flex align-items-center justify-content-center mx-auto mb-4">
+              <i class="pi pi-exclamation-triangle text-4xl text-yellow-600"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-900 mb-2">Payment Pending</h2>
+            <p class="text-color-secondary mb-4">We are still waiting for Stripe payment confirmation. If you completed payment, it should appear in your profile order history shortly.</p>
+            
+            <div class="flex flex-column sm:flex-row gap-2 justify-content-center">
+              <button type="button" class="btn-primary py-3 px-4" [routerLink]="['/profile']">Check Order History</button>
+              <button type="button" class="btn-secondary py-3 px-4" [routerLink]="['/home']">Back to Store</button>
+            </div>
+          </div>
+        }
+      }
+
+    </div>
+  </div>
+</section>

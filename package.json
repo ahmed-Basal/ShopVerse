@@ -1,0 +1,10 @@
+{
+  "name": "full-stack-ecommerce",
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install --prefix \"web api\" && npm install --prefix frontend",
+    "start:backend": "npm run start:dev --prefix \"web api\"",
+    "start:frontend": "npm run start --prefix frontend",
+    "start": "npx -y concurrently \"npm run start:backend\" \"npm run start:frontend\""
+  }
+}

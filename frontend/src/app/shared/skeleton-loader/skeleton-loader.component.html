@@ -1,0 +1,28 @@
+<div class="skeleton-container">
+  @if (type === 'card') {
+    <div class="flex flex-wrap w-full">
+      @for (item of array; track $index) {
+        <div class="col-12 md:col-4 lg:col-3">
+          <div class="skeleton-card">
+            <div class="shimmer skeleton-media"></div>
+            <div class="skeleton-content">
+              <div class="shimmer skeleton-title"></div>
+              <div class="shimmer skeleton-text"></div>
+              <div class="flex justify-content-between align-items-center mt-3">
+                <div class="shimmer skeleton-price"></div>
+                <div class="shimmer skeleton-badge"></div>
+              </div>
+              <div class="shimmer skeleton-button mt-3"></div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="skeleton-list-container w-full">
+      @for (item of array; track $index) {
+        <div class="shimmer skeleton-list-item"></div>
+      }
+    </div>
+  }
+</div>

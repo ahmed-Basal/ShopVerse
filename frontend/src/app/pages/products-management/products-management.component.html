@@ -1,0 +1,166 @@
+<div class="products-management">
+  <div class="header-section">
+    <h1 class="page-title">Products Management</h1>
+    <button class="add-btn" (click)="openAddForm()">
+      <i class="pi pi-plus"></i> Add Product
+    </button>
+  </div>
+
+  @if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h2>
+        <button class="close-btn" (click)="closeForm()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="submit()" class="modal-form">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input id="title" type="text" formControlName="title" placeholder="Product Title" />
+          @if (productForm.get('title')?.touched && productForm.get('title')?.invalid) {
+          <span class="error-text">Title is required (min 3 chars).</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" formControlName="description" rows="3" placeholder="Product Description"></textarea>
+          @if (productForm.get('description')?.touched && productForm.get('description')?.invalid) {
+          <span class="error-text">Description is required (min 10 chars).</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price ($)</label>
+            <input id="price" type="number" formControlName="price" placeholder="Price" />
+            @if (productForm.get('price')?.touched && productForm.get('price')?.invalid) {
+            <span class="error-text">Valid price is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input id="quantity" type="number" formControlName="quantity" placeholder="Stock Quantity" />
+            @if (productForm.get('quantity')?.touched && productForm.get('quantity')?.invalid) {
+            <span class="error-text">Valid quantity is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="priceAfterDiscount">Discounted Price ($)</label>
+            <input id="priceAfterDiscount" type="number" formControlName="priceAfterDiscount" placeholder="Discounted Price (Optional)" />
+            @if (productForm.get('priceAfterDiscount')?.touched && productForm.get('priceAfterDiscount')?.invalid) {
+            <span class="error-text">Discounted price must be positive.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" formControlName="category">
+            <option value="" disabled selected>Select Category</option>
+            @for (cat of categories; track cat._id) {
+            <option [value]="cat._id">{{ cat.name }}</option>
+            }
+          </select>
+          @if (productForm.get('category')?.touched && productForm.get('category')?.invalid) {
+          <span class="error-text">Category is required.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="colors">Colors (Comma separated)</label>
+          <input id="colors" type="text" formControlName="colors" placeholder="e.g. Red, Blue, Black" />
+          <span class="info-text">Separate colors with commas.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Cover Image</label>
+          <input id="image" type="file" (change)="onImageChange($event)" accept="image/*" />
+          @if (!isEditMode && !imageFile) {
+          <span class="info-text">Upload product cover photo.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="galleryImages">Gallery Images (Up to 5)</label>
+          <input id="galleryImages" type="file" (change)="onGalleryImagesChange($event)" accept="image/*" multiple />
+          <span class="info-text">Upload additional product gallery photos.</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            @if (loading) {
+            <i class="pi pi-spin pi-spinner"></i> Saving...
+            } @else {
+            {{ isEditMode ? 'Update' : 'Create' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  @if (loading && products.length === 0) {
+  <div class="loading-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Loading products catalog...</p>
+  </div>
+  } @else {
+  <div class="section-card">
+    @if (products.length > 0) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Sold</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (prod of products; track prod._id) {
+          <tr>
+            <td>
+              <img [src]="prod.imageCover || './assets/product-1.jpg'" alt="img" class="prod-thumbnail" />
+            </td>
+            <td class="prod-title">{{ prod.title }}</td>
+            <td>{{ prod.category?.name || 'N/A' }}</td>
+            <td class="price">${{ prod.price }}</td>
+            <td>
+              <span class="stock-badge" [class.low-stock]="prod.quantity < 5">
+                {{ prod.quantity }}
+              </span>
+            </td>
+            <td>{{ prod.sold }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn edit-btn" (click)="openEditForm(prod)">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button class="action-btn delete-btn" (click)="deleteProduct(prod._id)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="empty-state">No products found in the catalog.</p>
+    }
+  </div>
+  }
+</div>

@@ -1,0 +1,78 @@
+.users-management {
+  padding: 10px 0;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.user-id {
+  font-weight: 600;
+  color: #e94560;
+  font-family: monospace;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.role-admin {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.role-manager {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+
+  &.role-user {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.delete-btn {
+    background-color: #fee2e2;
+    color: #ef4444;
+
+    &:hover {
+      background-color: #ef4444;
+      color: #fff;
+    }
+  }
+}
+
+.system-text {
+  color: #8c9099;
+  font-size: 0.85rem;
+  font-style: italic;
+}

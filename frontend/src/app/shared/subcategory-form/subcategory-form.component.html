@@ -1,0 +1,65 @@
+<div class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>{{ subcategory ? 'Edit Subcategory' : 'Add New Subcategory' }}</h2>
+      <button type="button" class="close-btn" (click)="cancel()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-form">
+      <div class="form-group">
+        <label for="name">Subcategory Name</label>
+        <input id="name" type="text" formControlName="name" placeholder="Enter subcategory name" />
+        @if (form.get('name')?.touched && form.get('name')?.invalid) {
+          <span class="error-text">Subcategory name is required (2-32 chars).</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="category">Parent Category</label>
+        <select id="category" formControlName="category">
+          <option value="" disabled selected>Select parent category</option>
+          @for (cat of categories; track cat._id) {
+            <option [value]="cat._id">{{ cat.name }}</option>
+          }
+        </select>
+        @if (form.get('category')?.touched && form.get('category')?.invalid) {
+          <span class="error-text">Parent category is required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description (Optional)</label>
+        <textarea id="description" formControlName="description" placeholder="Enter optional description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="image">Subcategory Image/Icon (Optional)</label>
+        <div class="file-upload-wrapper">
+          <input id="image" type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" />
+          <div class="file-upload-preview">
+            @if (imagePreview) {
+              <img [src]="imagePreview" alt="Subcategory preview" class="preview-img" />
+              <span class="change-text">Change Image</span>
+            } @else {
+              <i class="pi pi-image upload-icon"></i>
+              <span>Choose an Image</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary px-4 py-2" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary px-4 py-2" [disabled]="loading">
+          @if (loading) {
+            <i class="pi pi-spin pi-spinner"></i> Saving...
+          } @else {
+            {{ subcategory ? 'Save Changes' : 'Create' }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

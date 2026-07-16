@@ -1,0 +1,208 @@
+/* ============================================================
+   CART PAGE — Dark Theme
+   ============================================================ */
+
+section {
+  background: var(--clr-bg-base) !important;
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+  color: var(--clr-text-primary);
+}
+
+h1.text-color-secondary {
+  color: var(--clr-text-primary) !important;
+}
+
+/* ── Cart Item Cards ── */
+.cart-item-card {
+  background: var(--clr-bg-elevated) !important;
+  border: 1px solid var(--clr-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  color: var(--clr-text-primary);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--clr-border-accent) !important;
+  }
+
+  /* Image container */
+  .w-10rem.h-10rem {
+    background: var(--clr-bg-surface) !important;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+
+    i.pi-image {
+      color: var(--clr-text-muted) !important;
+    }
+  }
+
+  /* Headings & badges */
+  span.font-bold.text-500 {
+    color: var(--clr-accent-light) !important;
+  }
+
+  h3.text-lg.text-900 {
+    color: var(--clr-text-primary) !important;
+  }
+
+  span.inline-block {
+    background: var(--clr-bg-subtle) !important;
+    color: var(--clr-text-secondary) !important;
+    border-radius: var(--radius-sm);
+  }
+
+  span.text-xl.text-900 {
+    color: var(--clr-text-primary) !important;
+    font-weight: 700;
+  }
+}
+
+/* ── Quantity Adjuster Buttons ── */
+.btn-qty {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast) !important;
+  border-radius: 50% !important;
+  background: var(--clr-bg-subtle) !important;
+  border: 1px solid var(--clr-border) !important;
+  color: var(--clr-text-secondary) !important;
+
+  &:hover:not(:disabled) {
+    background: var(--clr-accent-muted) !important;
+    color: var(--clr-accent-light) !important;
+    border-color: var(--clr-border-accent) !important;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Trash Icon Button ── */
+.btn-danger-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--clr-danger);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+
+  &:hover {
+    background: rgba(248, 113, 113, 0.12);
+  }
+}
+
+/* ── Summary Panel ── */
+.summary-card {
+  position: sticky;
+  top: 100px;
+  background: var(--clr-bg-elevated) !important;
+  border: 1px solid var(--clr-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: var(--clr-text-primary);
+
+  h2.border-bottom-1 {
+    color: var(--clr-text-primary) !important;
+    border-color: var(--clr-border) !important;
+  }
+
+  .text-color-secondary {
+    color: var(--clr-text-secondary) !important;
+  }
+
+  .text-green-500 {
+    color: var(--clr-success) !important;
+  }
+
+  .text-lg.text-900 {
+    color: var(--clr-text-primary) !important;
+  }
+
+  .text-2xl.text-primary {
+    color: var(--clr-accent-light) !important;
+  }
+
+  .border-top-1 {
+    border-color: var(--clr-border) !important;
+  }
+}
+
+/* ── Coupon Section inside Summary Card ── */
+.coupon-section {
+  border-color: var(--clr-border) !important;
+
+  label {
+    color: var(--clr-text-secondary) !important;
+  }
+
+  .coupon-input {
+    background: var(--clr-bg-surface) !important;
+    border: 1px solid var(--clr-border) !important;
+    color: var(--clr-text-primary) !important;
+    border-radius: var(--radius-md) !important;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+    &::placeholder {
+      color: var(--clr-text-muted) !important;
+    }
+
+    &:focus {
+      border-color: var(--clr-accent) !important;
+      box-shadow: 0 0 0 3px var(--clr-accent-glow) !important;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .text-red-500 {
+    color: var(--clr-danger) !important;
+  }
+}
+
+/* ── Empty Cart State ── */
+.empty-container {
+  background: var(--clr-bg-elevated) !important;
+  border: 1px solid var(--clr-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 60px 20px;
+  color: var(--clr-text-primary);
+
+  i.pi-shopping-cart {
+    color: var(--clr-text-muted) !important;
+  }
+
+  h2 {
+    color: var(--clr-text-primary) !important;
+  }
+
+  p {
+    color: var(--clr-text-secondary) !important;
+  }
+}
+
+/* Loading spinner */
+i.pi-spin.text-orange-500 {
+  color: var(--clr-accent-light) !important;
+}

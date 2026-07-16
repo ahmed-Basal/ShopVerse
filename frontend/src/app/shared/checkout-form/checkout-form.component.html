@@ -1,0 +1,66 @@
+<div class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>Shipping & Payment Details</h2>
+      <button type="button" class="close-btn" (click)="cancel()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="modal-form">
+      <div class="form-group">
+        <label for="city">City</label>
+        <input id="city" type="text" formControlName="city" placeholder="e.g. Cairo, Giza, Alexandria" />
+        @if (form.get('city')?.touched && form.get('city')?.invalid) {
+          <span class="error-text">City is required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="details">Full Address Details</label>
+        <textarea id="details" formControlName="details" placeholder="e.g. Street name, Building No, Apartment No" rows="2"></textarea>
+        @if (form.get('details')?.touched && form.get('details')?.invalid) {
+          <span class="error-text">Address details are required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="text" formControlName="phone" placeholder="e.g. 01xxxxxxxxx" />
+        @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
+          <span class="error-text">Please enter a valid Egyptian mobile number (11 digits).</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Payment Method</label>
+        <div class="payment-methods-grid">
+          <label class="payment-method-card" [class.active]="form.get('paymentMethod')?.value === 'card'">
+            <input type="radio" formControlName="paymentMethod" value="card" class="hidden-radio" />
+            <i class="pi pi-credit-card payment-icon"></i>
+            <div class="payment-info">
+              <span class="payment-title">Pay with Card</span>
+              <span class="payment-desc">Credit / Debit Card (Stripe)</span>
+            </div>
+          </label>
+
+          <label class="payment-method-card" [class.active]="form.get('paymentMethod')?.value === 'cash'">
+            <input type="radio" formControlName="paymentMethod" value="cash" class="hidden-radio" />
+            <i class="pi pi-money-bill payment-icon"></i>
+            <div class="payment-info">
+              <span class="payment-title">Cash on Delivery</span>
+              <span class="payment-desc">Pay with cash upon arrival</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary px-4 py-2" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn-primary px-4 py-2">
+          Proceed
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

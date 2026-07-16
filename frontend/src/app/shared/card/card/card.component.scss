@@ -1,0 +1,172 @@
+/* ============================================================
+   SHARED CARD COMPONENT — Dark Theme (Fixed)
+   ============================================================ */
+
+/* Outer wrapper for each product card */
+.col-12 > div,
+.col-6 > div {
+  background: var(--clr-bg-elevated);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--clr-border-accent);
+  }
+}
+
+/* Product image wrapper */
+figure {
+  margin: 0 !important;
+  position: relative;
+  overflow: hidden;
+  background: var(--clr-bg-surface);
+  display: block;
+  width: 100%;
+
+  img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+
+    /* Large card: fixed height */
+    &.h-20rem {
+      height: 200px;
+    }
+
+    /* Small card: auto height */
+    &.h-full {
+      height: 140px;
+      min-height: 100px;
+    }
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* Wishlist heart button (absolute top-right on figure) */
+button.absolute {
+  background: rgba(12, 11, 16, 0.7) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--clr-border) !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all var(--transition-fast) !important;
+  margin: 8px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+
+  i {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: rgba(124, 58, 237, 0.25) !important;
+    border-color: var(--clr-border-accent) !important;
+    transform: scale(1.15) !important;
+    box-shadow: none !important;
+  }
+
+  .pi-heart      { color: var(--clr-text-muted) !important; }
+  .pi-heart-fill { color: var(--clr-danger)     !important; }
+}
+
+/* Content area below image */
+.content {
+  padding: 10px 12px 12px !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Description text */
+.truncate-text {
+  overflow: hidden;
+  line-height: 1.4;
+  font-size: 0.75rem;
+  color: var(--clr-text-secondary);
+  margin: 0 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: none;
+}
+
+/* Price row */
+.price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .text-color-secondary del {
+    color: var(--clr-text-muted) !important;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .new-price {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+
+    .text-green-400 {
+      color: var(--clr-success) !important;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+/* Discount badge */
+.offer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  span.bg-red-500 {
+    background: rgba(248, 113, 113, 0.12) !important;
+    color: var(--clr-danger) !important;
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    border-radius: var(--radius-sm) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700;
+    padding: 2px 5px !important;
+  }
+
+  .fonot-bold.text-xs {
+    color: var(--clr-text-muted);
+    font-size: 0.68rem;
+  }
+}
+
+/* Empty state */
+.flex-1.text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 3rem 1rem;
+
+  h2 {
+    color: var(--clr-text-secondary);
+    font-size: 1.05rem;
+
+    span.text-red-500 {
+      color: var(--clr-danger) !important;
+    }
+  }
+}

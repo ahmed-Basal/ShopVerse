@@ -1,0 +1,177 @@
+<div class="categories-management container py-5">
+  <!-- Header section -->
+  <div class="header-section flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+    <div>
+      <h1 class="page-title text-3xl font-bold m-0">Categories & Subcategories</h1>
+      <p class="text-color-secondary mt-1">Manage categories and their subcategories.</p>
+    </div>
+    @if (isAdmin) {
+      <div class="flex gap-2">
+        <button class="btn-secondary flex align-items-center gap-2" (click)="openAddForm()">
+          <i class="pi pi-plus"></i> Add Category
+        </button>
+        <button class="btn-primary flex align-items-center gap-2" (click)="openAddSubcategory()">
+          <i class="pi pi-plus"></i> Add Subcategory
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Add/Edit Category Modal -->
+  @if (showForm && isAdmin) {
+    <div class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>{{ isEditMode ? 'Edit Category' : 'Add New Category' }}</h2>
+          <button class="close-btn" (click)="closeForm()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <form [formGroup]="categoryForm" (ngSubmit)="submit()" class="modal-form">
+          <div class="form-group">
+            <label for="name">Category Name</label>
+            <input id="name" type="text" formControlName="name" placeholder="Category Name" />
+            @if (categoryForm.get('name')?.touched && categoryForm.get('name')?.invalid) {
+              <span class="error-text">Category name is required (min 3 chars).</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="categoryImage">Category Image</label>
+            <div class="file-upload-wrapper">
+              <input id="categoryImage" type="file" (change)="onCategoryImageChange($event)" accept="image/*" class="file-input" />
+              <div class="file-upload-preview">
+                @if (categoryImagePreview) {
+                  <img [src]="categoryImagePreview" alt="Category preview" class="preview-img" />
+                  <span class="change-text">Change Image</span>
+                } @else {
+                  <i class="pi pi-image upload-icon"></i>
+                  <span>Choose Category Cover Image</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+              @if (loading) {
+                <i class="pi pi-spin pi-spinner"></i> Saving...
+              } @else {
+                {{ isEditMode ? 'Save' : 'Create' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Add/Edit Subcategory Modal Form -->
+  @if (showSubcategoryForm && isAdmin) {
+    <app-subcategory-form
+      [subcategory]="selectedSubcategory"
+      [category]="selectedParentCategory"
+      [categories]="categories"
+      (saved)="onSubcategorySaved()"
+      (close)="closeSubcategoryForm()"
+    ></app-subcategory-form>
+  }
+
+  <!-- Loading State -->
+  @if (loading && categories.length === 0) {
+    <div class="loading-container text-center py-6">
+      <i class="pi pi-spin pi-spinner text-4xl text-orange-500 mb-2"></i>
+      <p class="text-color-secondary">Loading categories and subcategories...</p>
+    </div>
+  } @else {
+    <!-- Redesigned Card Grid List -->
+    <div class="categories-grid grid">
+      @for (cat of categories; track cat._id) {
+        <div class="col-12 md:col-6 lg:col-4">
+          <div class="category-dashboard-card border-round-2xl overflow-hidden flex flex-column h-full">
+            <!-- Category Banner/Image -->
+            <div class="category-banner">
+              <img [src]="cat.image || './assets/categories/general.jpg'" [alt]="cat.name" class="category-banner-img" />
+              <div class="category-banner-overlay"></div>
+              
+              @if (isAdmin) {
+                <div class="category-actions flex gap-2">
+                  <button class="action-btn edit-btn" (click)="openEditForm(cat)" title="Edit Category">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteCategory(cat._id)" title="Delete Category">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Category Content -->
+            <div class="category-content-container p-4 flex-grow-1 flex flex-column">
+              <div class="flex justify-content-between align-items-start mb-1">
+                <h3 class="category-name text-xl font-bold m-0">{{ cat.name }}</h3>
+                <span class="subcategory-count-badge">
+                  {{ categorySubcategoriesMap[cat._id]?.length || 0 }} sub
+                </span>
+              </div>
+              <span class="category-slug text-xs mb-3">/categories/{{ cat.slug }}</span>
+              
+              <div class="divider mb-3 mt-1"></div>
+              
+              <div class="subcategories-header flex justify-content-between align-items-center mb-2">
+                <span class="subcategories-title text-xs font-semibold uppercase tracking-wider">Subcategories</span>
+                @if (isAdmin) {
+                  <button class="add-sub-inline-btn text-xs flex align-items-center gap-1" (click)="openAddSubcategoryForCategory(cat)">
+                    <i class="pi pi-plus text-xs"></i> Add Sub
+                  </button>
+                }
+              </div>
+
+              <!-- Scrollable subcategories list -->
+              <div class="subcategories-scroll flex-grow-1 overflow-y-auto max-h-12rem pr-1">
+                @for (sub of categorySubcategoriesMap[cat._id] || []; track sub._id) {
+                  <div class="subcategory-item flex justify-content-between align-items-center p-2 border-round-xl mb-2">
+                    <div class="flex align-items-center gap-2">
+                      <div class="sub-img-container flex align-items-center justify-content-center border-round-md">
+                        @if (sub.image) {
+                          <img [src]="sub.image" [alt]="sub.name" class="sub-img" />
+                        } @else {
+                          <i class="pi pi-image text-xs text-muted"></i>
+                        }
+                      </div>
+                      <span class="sub-name text-sm font-medium">{{ sub.name }}</span>
+                    </div>
+                    @if (isAdmin) {
+                      <div class="sub-actions-overlay flex gap-1">
+                        <button class="sub-action-icon-btn edit" (click)="openEditSubcategory(sub)" title="Edit Subcategory">
+                          <i class="pi pi-pencil"></i>
+                        </button>
+                        <button class="sub-action-icon-btn delete" (click)="deleteSubcategory(sub._id)" title="Delete Subcategory">
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                } @empty {
+                  <div class="empty-sub-state text-center py-3 italic text-xs">
+                    No subcategories found.
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-12">
+          <div class="empty-categories-state text-center py-8 border-round-2xl border-1 border-200">
+            <i class="pi pi-folder-open text-5xl text-300 mb-3"></i>
+            <h3 class="text-xl font-bold mb-2">No categories found</h3>
+            <p class="text-color-secondary">Get started by creating your first category.</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

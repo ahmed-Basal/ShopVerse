@@ -1,0 +1,88 @@
+<div class="orders-management">
+  <h1 class="page-title">Orders Management</h1>
+
+  @if (loading && orders.length === 0) {
+  <div class="loading-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Loading orders...</p>
+  </div>
+  } @else {
+  <div class="section-card">
+    @if (orders.length > 0) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Total Amount</th>
+            <th>Paid Status</th>
+            <th>Delivery Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders; track order._id) {
+          <tr>
+            <td class="order-id">{{ order._id | slice : -8 }}</td>
+            <td>
+              <div class="customer-info">
+                <span class="customer-name">{{ order.user?.name || 'N/A' }}</span>
+                <span class="customer-email">{{ order.user?.email || '' }}</span>
+              </div>
+            </td>
+            <td class="price">${{ order.totalOrderPrice | number : '1.2-2' }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="order.isPaid"
+                [class.badge-warning]="!order.isPaid"
+              >
+                {{ order.isPaid ? 'Paid' : 'Pending' }}
+              </span>
+              @if (order.isPaid && order.paidAt) {
+              <div class="status-date">{{ order.paidAt | date : 'shortDate' }}</div>
+              }
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="order.isDelivered"
+                [class.badge-warning]="!order.isDelivered"
+              >
+                {{ order.isDelivered ? 'Delivered' : 'Processing' }}
+              </span>
+              @if (order.isDelivered && order.deliveredAt) {
+              <div class="status-date">{{ order.deliveredAt | date : 'shortDate' }}</div>
+              }
+            </td>
+            <td>{{ order.createdAt | date : 'mediumDate' }}</td>
+            <td>
+              <div class="action-buttons">
+                @if (!order.isPaid) {
+                <button class="action-btn pay-btn" (click)="markAsPaid(order._id)" title="Mark as Paid">
+                  <i class="pi pi-money-bill"></i> Pay
+                </button>
+                }
+                @if (order.isPaid && !order.isDelivered) {
+                <button class="action-btn deliver-btn" (click)="markAsDelivered(order._id)" title="Mark as Delivered">
+                  <i class="pi pi-send"></i> Deliver
+                </button>
+                }
+                @if (order.isPaid && order.isDelivered) {
+                <span class="completed-text"><i class="pi pi-check-circle"></i> Complete</span>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="empty-state">No orders found in the database.</p>
+    }
+  </div>
+  }
+</div>

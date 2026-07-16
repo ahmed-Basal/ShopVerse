@@ -1,0 +1,21 @@
+/* ============================================================
+   USER-FOOTER — Dark Theme
+   ============================================================ */
+.copyright-area {
+  background: var(--clr-bg-elevated);
+  border-top: 1px solid var(--clr-border);
+  padding: 20px 0;
+  text-align: center;
+
+  p {
+    color: var(--clr-text-muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .text-main {
+    color: var(--clr-accent-light);
+    font-weight: 600;
+  }
+}

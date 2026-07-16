@@ -1,0 +1,84 @@
+/* ============================================================
+   SKELETON LOADER — Dark Theme
+   ============================================================ */
+
+.skeleton-container {
+  width: 100%;
+}
+
+// Shared shimmer base
+%shimmer-base {
+  position: relative;
+  overflow: hidden;
+  background: var(--clr-bg-surface);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0)     0%,
+      rgba(167, 139, 250, 0.06) 30%,
+      rgba(167, 139, 250, 0.10) 60%,
+      rgba(255, 255, 255, 0)   100%
+    );
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+.skeleton-card {
+  background: var(--clr-bg-elevated);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin: 8px;
+
+  .skeleton-media {
+    height: 16rem;
+    @extend %shimmer-base;
+    margin-bottom: 0;
+    border-radius: 0;
+  }
+
+  .skeleton-title,
+  .skeleton-text,
+  .skeleton-price,
+  .skeleton-badge,
+  .skeleton-button {
+    @extend %shimmer-base;
+    border-radius: var(--radius-sm);
+    margin: 10px 12px;
+  }
+
+  .skeleton-title  { height: 1.1rem; width: 75%; }
+  .skeleton-text   { height: 0.9rem; width: 55%; margin-top: 0; }
+  .skeleton-price  { height: 1.1rem; width: 28%; }
+  .skeleton-badge  { height: 0.85rem; width: 18%; }
+  .skeleton-button { height: 2.4rem; width: calc(100% - 24px); border-radius: var(--radius-md); margin-bottom: 12px; }
+}
+
+// Shimmer alias for individual items
+.shimmer {
+  @extend %shimmer-base;
+}
+
+.skeleton-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .skeleton-list-item {
+    @extend %shimmer-base;
+    height: 52px;
+    border-radius: var(--radius-md);
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}

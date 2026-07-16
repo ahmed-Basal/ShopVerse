@@ -1,0 +1,15 @@
+<div class="search-bar-container">
+  <i class="pi pi-search search-icon"></i>
+  <input
+    type="text"
+    [value]="value"
+    (input)="onInput($event)"
+    [placeholder]="placeholder"
+    class="search-input"
+  />
+  @if (value) {
+    <button type="button" class="clear-btn" (click)="clear()">
+      <i class="pi pi-times"></i>
+    </button>
+  }
+</div>

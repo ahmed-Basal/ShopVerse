@@ -1,0 +1,153 @@
+<section class="py-5">
+  <div class="container">
+    <h1 class="text-color-secondary capitalize mb-4 font-bold text-3xl">all cart products</h1>
+
+    @if (loading && cartItems.length === 0) {
+      <div class="text-center py-6">
+        <i class="pi pi-spin pi-spinner text-4xl text-orange-500 mb-2"></i>
+        <p class="text-color-secondary">Loading cart...</p>
+      </div>
+    } @else {
+      @if (cartItems.length > 0) {
+        <div class="grid">
+          <!-- Cart Items List -->
+          <div class="col-12 lg:col-8">
+            <div class="flex flex-column gap-3">
+              @for (item of cartItems; track item._id) {
+                <div class="cart-item-card flex flex-column sm:flex-row align-items-center p-4 gap-3 border-1 border-200 border-round-2xl bg-white shadow-1 transition-all">
+                  <!-- Product Image -->
+                  <div class="w-10rem h-10rem overflow-hidden border-round-xl bg-100 flex align-items-center justify-content-center">
+                    @if (item.product?.imageCover) {
+                      <img [src]="item.product.imageCover" [alt]="item.product.title" class="w-full h-full object-cover" />
+                    } @else {
+                      <i class="pi pi-image text-color-secondary text-2xl"></i>
+                    }
+                  </div>
+
+                  <!-- Product details and controls -->
+                  <div class="flex flex-column sm:flex-row justify-content-between align-items-stretch flex-1 gap-3">
+                    <div class="flex flex-column justify-content-between">
+                      <div>
+                        <span class="text-xs font-bold text-500 uppercase">{{ item.product?.category || 'General' }}</span>
+                        <h3 class="text-lg font-bold text-900 mt-1 mb-2">{{ item.product?.title || 'Unknown Product' }}</h3>
+                        @if (item.color) {
+                          <span class="inline-block px-2 py-1 text-xs font-semibold text-color-secondary bg-100 border-round-md">Color: {{ item.color }}</span>
+                        }
+                      </div>
+                      
+                      <!-- Quantity Adjuster -->
+                      <div class="flex align-items-center gap-3 mt-3">
+                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" [disabled]="item.quantity <= 1" (click)="updateQuantity(item._id, item.quantity, false)">
+                          <i class="pi pi-minus text-xs"></i>
+                        </button>
+                        <span class="font-bold text-900">{{ item.quantity }}</span>
+                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" (click)="updateQuantity(item._id, item.quantity, true)">
+                          <i class="pi pi-plus text-xs"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Price & Actions -->
+                    <div class="flex flex-column justify-content-between align-items-end text-right">
+                      <span class="text-xl font-bold text-900">$ {{ (item.price * item.quantity).toFixed(2) }}</span>
+                      
+                      <button type="button" class="btn-danger-icon" (click)="removeItem(item._id)" title="Remove item">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Clear Cart Button -->
+            <button type="button" class="btn-secondary w-full uppercase mt-4 py-3 flex align-items-center justify-content-center gap-2" (click)="clearCart()">
+              <i class="pi pi-trash"></i> Clear Cart
+            </button>
+          </div>
+
+          <!-- Cart Summary Panel -->
+          <div class="col-12 lg:col-4">
+            <div class="summary-card p-4 border-1 border-200 border-round-2xl bg-white shadow-1">
+              <h2 class="text-xl font-bold text-900 mb-4 border-bottom-1 border-200 pb-3">Order Summary</h2>
+              
+              <div class="flex justify-content-between mb-3 text-color-secondary font-medium">
+                <span>Subtotal</span>
+                <span>$ {{ totalCartPrice.toFixed(2) }}</span>
+              </div>
+              
+              <div class="flex justify-content-between mb-3 text-color-secondary font-medium">
+                <span>Shipping</span>
+                <span class="text-green-500 font-semibold">Free</span>
+              </div>
+
+              @if (totalPriceAfterDiscount > 0 && totalPriceAfterDiscount < totalCartPrice) {
+                <div class="flex justify-content-between mb-4 text-green-500 font-semibold">
+                  <span>Discounted Price</span>
+                  <span>$ {{ totalPriceAfterDiscount }}</span>
+                </div>
+              }
+
+              <!-- Coupon Input Section -->
+              <div class="coupon-section border-top-1 border-200 pt-3 pb-3 mb-3">
+                <label class="block text-xs font-semibold text-color-secondary uppercase mb-2">Apply Coupon</label>
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    [(ngModel)]="couponCode"
+                    [disabled]="couponLoading"
+                    placeholder="Enter coupon code"
+                    class="p-2 border-1 border-200 border-round-lg w-full coupon-input"
+                    (keydown.enter)="applyCoupon()"
+                  />
+                  <button
+                    type="button"
+                    [disabled]="couponLoading || !couponCode.trim()"
+                    class="btn-primary py-2 px-3 text-xs w-6rem flex align-items-center justify-content-center"
+                    (click)="applyCoupon()"
+                  >
+                    @if (couponLoading) {
+                      <i class="pi pi-spin pi-spinner"></i>
+                    } @else {
+                      Apply
+                    }
+                  </button>
+                </div>
+                @if (couponError) {
+                  <span class="text-xs text-red-500 block mt-2">{{ couponError }}</span>
+                }
+              </div>
+
+              <div class="flex justify-content-between align-items-center border-top-1 border-200 pt-3 mb-4">
+                <span class="text-lg font-bold text-900">Total</span>
+                <span class="text-2xl font-bold text-primary">
+                  $ {{ (totalPriceAfterDiscount > 0 ? totalPriceAfterDiscount : totalCartPrice).toFixed(2) }}
+                </span>
+              </div>
+
+              <button type="button" class="btn-primary w-full py-3 text-center text-lg font-bold" (click)="openCheckout()">
+                Proceed to Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- Empty Cart State -->
+        <div class="empty-container text-center py-8 border-round-2xl border-1 border-200 bg-white">
+          <i class="pi pi-shopping-cart text-6xl text-300 mb-3"></i>
+          <h2 class="text-2xl font-bold text-900 mb-2">Your cart is empty</h2>
+          <p class="text-color-secondary mb-4">Explore our collections and add products to start shopping.</p>
+          <button type="button" class="btn-primary px-5 py-3" [routerLink]="['/products']">Shop Now</button>
+        </div>
+      }
+    }
+
+    <!-- Checkout Modal Form -->
+    @if (showCheckoutModal) {
+      <app-checkout-form
+        (checkoutSubmit)="onCheckoutSubmit($event)"
+        (close)="closeCheckout()"
+      ></app-checkout-form>
+    }
+  </div>
+</section>

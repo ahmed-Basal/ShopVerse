@@ -1,0 +1,74 @@
+<div class="auth-page-container">
+  <div class="auth-card">
+    <div class="auth-logo-container">
+      <img src="./assets/logo.svg" alt="Logo" class="auth-logo" />
+    </div>
+
+    <div class="auth-header">
+      <h1 class="auth-title">Verify Code</h1>
+      <p class="auth-subtitle">We have sent a 6-digit reset code to <strong>{{ email }}</strong></p>
+    </div>
+
+    <form [formGroup]="verifyForm" (ngSubmit)="submit()" class="auth-form">
+      <!-- Verification Code Field -->
+      <div class="form-group">
+        <label for="code">Verification Code</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-key"></i>
+          </span>
+          <input
+            id="code"
+            pInputText
+            formControlName="code"
+            placeholder="Enter 6-digit code"
+            [autofocus]="true"
+            maxlength="6"
+          />
+        </div>
+        @if (codeControl.touched && codeControl.invalid) {
+          <div class="auth-inline-error">
+            @if (codeControl.getError('required')) {
+              <span>Verification code is required.</span>
+            } @else if (codeControl.getError('minlength') || codeControl.getError('maxlength') || codeControl.getError('pattern')) {
+              <span>Code must be exactly 6 numeric digits.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Resend and Action Links -->
+      <div class="flex flex-column gap-3 mt-2">
+        <div class="flex justify-content-center text-sm">
+          @if (cooldown > 0) {
+            <span class="text-muted">Resend code in {{ cooldown }}s</span>
+          } @else {
+            <a (click)="resendCode()" class="text-accent font-semibold cursor-pointer hover:underline">Resend Verification Code</a>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <div class="auth-submit-btn">
+          <button
+            pButton
+            type="submit"
+            label="Verify Code"
+            [disabled]="loading || verifyForm.invalid"
+            class="w-full"
+          >
+            @if (loading) {
+              <i class="pi pi-spin pi-spinner mr-2"></i>
+            }
+          </button>
+        </div>
+
+        <!-- Back Link -->
+        <p class="auth-footer-text mt-2">
+          <a routerLink="/forgot-password" class="flex align-items-center justify-content-center gap-2">
+            <i class="pi pi-arrow-left text-xs"></i> Change Email
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

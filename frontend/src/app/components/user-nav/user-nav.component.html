@@ -1,0 +1,86 @@
+<div class="card">
+  <p-menubar [model]="items">
+    <ng-template pTemplate="start">
+      <figure class="my-0 mx-2 cursor-pointer" [routerLink]="['/home']">
+        <img class="w-2rem" src="./assets/logo.svg" alt="logo" />
+      </figure>
+    </ng-template>
+
+    <ng-template pTemplate="item" let-item let-root="root">
+      <a
+        [routerLink]="item?.['path']"
+        pRipple
+        class="flex align-items-center p-menuitem-link"
+      >
+        <span [class]="item.icon"></span>
+        <span class="ml-2">{{ item.label }}</span>
+      </a>
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <div class="card flex justify-content-center align-items-center gap-3">
+        <!-- Logged In Section -->
+        @if (isLoggedIn) {
+          <!-- Cart Icon -->
+          <a [routerLink]="['/cart']" class="p-2 flex align-items-center justify-content-center text-600 hover:text-900 transition-colors">
+            <i class="pi pi-shopping-cart text-2xl" pBadge [value]="cartCount > 0 ? cartCount.toString() : ''" severity="warning"></i>
+          </a>
+
+          <!-- Notifications Bell -->
+          <div class="relative">
+            <button type="button" class="btn-bell bg-transparent border-none cursor-pointer p-2 flex align-items-center justify-content-center text-600 hover:text-900 transition-colors" (click)="toggleNotifications(); $event.stopPropagation()">
+              <i class="pi pi-bell text-2xl" pBadge [value]="unreadNotificationsCount > 0 ? unreadNotificationsCount.toString() : ''" severity="danger"></i>
+            </button>
+            
+            <!-- Notifications Dropdown -->
+            @if (showNotificationsDropdown) {
+              <div class="notifications-dropdown border-1 border-200 border-round-xl bg-white shadow-3 p-3 absolute right-0 mt-2 z-5">
+                <div class="flex justify-content-between align-items-center border-bottom-1 border-200 pb-2 mb-2" style="width: 250px;">
+                  <span class="font-bold text-900">Notifications</span>
+                  @if (unreadNotificationsCount > 0) {
+                    <button type="button" class="btn-text text-primary text-xs font-semibold cursor-pointer border-none bg-transparent hover:underline" (click)="markNotificationsRead()">Mark as read</button>
+                  }
+                </div>
+                <div class="notifications-list flex flex-column gap-2 overflow-y-auto max-h-15rem">
+                  @if (notificationsList.length > 0) {
+                    @for (notif of notificationsList; track notif.id) {
+                      <div class="notif-item p-2 border-round-md" [class.unread]="!notif.read" style="background: rgba(249, 115, 22, 0.03);">
+                        <p class="text-sm text-800 m-0 font-medium line-height-3">{{ notif.message }}</p>
+                        <span class="text-xs text-500 block mt-1"><i class="pi pi-clock text-xs mr-1"></i>{{ notif.timestamp | date:'shortTime' }}</span>
+                      </div>
+                    }
+                  } @else {
+                    <div class="text-center py-4 text-color-secondary text-sm">
+                      No notifications yet.
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- User Profile Dropdown -->
+          <div class="relative">
+            <a
+              (click)="logOut = !logOut; showNotificationsDropdown = false; $event.stopPropagation()"
+              class="user-name px-3 py-2 text-white bg-orange-400 font-bold capitalize border-round-lg cursor-pointer flex align-items-center gap-2 hover:bg-orange-500 transition-colors"
+            >
+              <i class="pi pi-user"></i>
+              <span>{{ username || 'Profile' }}</span>
+            </a>
+
+            @if (logOut) {
+              <a
+                (click)="logout(); $event.stopPropagation()"
+                class="logout py-2 px-4 text-white bg-orange-400 font-bold absolute flex align-items-center gap-2 hover:bg-orange-500 transition-colors"
+              >
+                <span>Logout</span>
+                <i class="pi pi-sign-out"></i>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </ng-template>
+  </p-menubar>
+</div>

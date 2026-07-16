@@ -1,0 +1,252 @@
+<section class="py-5 bg-50 min-h-screen">
+  <div class="container">
+    <div class="grid">
+      <!-- Profile Sidebar/Header -->
+      <div class="col-12 lg:col-3">
+        <div class="profile-nav-card p-4 border-round-2xl border-1 border-200 bg-white shadow-1 mb-4">
+          <div class="text-center mb-4">
+            <div class="w-5rem h-5rem bg-primary-100 border-circle flex align-items-center justify-content-center mx-auto mb-3">
+              <i class="pi pi-user text-3xl text-primary"></i>
+            </div>
+            <h2 class="text-xl font-bold text-900 mb-1">My Account</h2>
+            <p class="text-color-secondary text-sm m-0">Manage wishlist, addresses & orders</p>
+          </div>
+
+          <div class="flex flex-column gap-2">
+            <button type="button" class="nav-tab-btn flex align-items-center gap-3 w-full text-left p-3 border-none border-round-xl cursor-pointer font-semibold text-color" [class.active]="activeTab === 'favorites'" (click)="switchTab('favorites')">
+              <i class="pi pi-heart"></i> Favorites
+            </button>
+            <button type="button" class="nav-tab-btn flex align-items-center gap-3 w-full text-left p-3 border-none border-round-xl cursor-pointer font-semibold text-color" [class.active]="activeTab === 'addresses'" (click)="switchTab('addresses')">
+              <i class="pi pi-map-marker"></i> Addresses
+            </button>
+            <button type="button" class="nav-tab-btn flex align-items-center gap-3 w-full text-left p-3 border-none border-round-xl cursor-pointer font-semibold text-color" [class.active]="activeTab === 'orders'" (click)="switchTab('orders')">
+              <i class="pi pi-shopping-bag"></i> Order History
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Tab Content -->
+      <div class="col-12 lg:col-9">
+        <div class="profile-content-card p-4 border-round-2xl border-1 border-200 bg-white shadow-1">
+          
+          <!-- TAB: FAVORITES -->
+          @if (activeTab === 'favorites') {
+            <div>
+              <h2 class="text-xl font-bold text-900 mb-4 flex align-items-center gap-2"><i class="pi pi-heart text-primary"></i> Wishlist Favorites</h2>
+              
+              @if (wishlistLoading) {
+                <div class="text-center py-5">
+                  <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                </div>
+              } @else {
+                @if (wishlistItems.length > 0) {
+                  <div class="grid">
+                    @for (item of wishlistItems; track item._id) {
+                      <div class="col-12 md:col-6 lg:col-4">
+                        <div class="fav-card p-3 border-round-xl border-1 border-200 shadow-1 flex flex-column justify-content-between h-full hover:shadow-2 transition-all">
+                          <div class="text-center mb-3">
+                            <img [src]="item.imageCover" [alt]="item.title" class="w-full h-8rem object-cover border-round-lg mb-2" />
+                            <h4 class="font-bold text-900 m-0 text-ellipsis">{{ item.title }}</h4>
+                            <span class="text-primary font-bold text-sm block mt-1">$ {{ item.price }}</span>
+                          </div>
+                          <div class="flex gap-2">
+                            <button type="button" class="btn-primary flex-1 py-2 text-xs" [routerLink]="['/details', item._id]">View Details</button>
+                            <button type="button" class="btn-secondary py-2 px-3 text-xs text-red-500 hover:bg-red-50" (click)="removeFromWishlist(item._id || '')" title="Remove from favorites"><i class="pi pi-trash"></i></button>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-center py-6">
+                    <i class="pi pi-heart text-5xl text-300 mb-2"></i>
+                    <p class="text-color-secondary m-0">No favorite products added yet.</p>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- TAB: ADDRESSES -->
+          @if (activeTab === 'addresses') {
+            <div>
+              <div class="flex justify-content-between align-items-center mb-4">
+                <h2 class="text-xl font-bold text-900 m-0 flex align-items-center gap-2"><i class="pi pi-map-marker text-primary"></i> Shipping Addresses</h2>
+                @if (!showAddressForm) {
+                  <button type="button" class="btn-primary py-2 px-3 text-xs" (click)="openAddAddress()"><i class="pi pi-plus mr-1"></i> Add New Address</button>
+                }
+              </div>
+
+              <!-- Address Edit/Create Form -->
+              @if (showAddressForm) {
+                <div class="p-4 border-round-xl border-1 border-200 bg-50 mb-4">
+                  <h3 class="text-lg font-bold text-900 mt-0 mb-3">{{ editingAddressId ? 'Edit Address' : 'Add New Address' }}</h3>
+                  <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="grid">
+                    <div class="col-12 md:col-6 form-group flex flex-column gap-1 mb-3">
+                      <label class="font-semibold text-xs text-700">Alias (e.g. Home, Office)</label>
+                      <input type="text" formControlName="alias" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="e.g. Home" />
+                      @if (addressForm.get('alias')?.touched && addressForm.get('alias')?.invalid) {
+                        <span class="text-xs text-red-500">Alias is required.</span>
+                      }
+                    </div>
+                    <div class="col-12 md:col-6 form-group flex flex-column gap-1 mb-3">
+                      <label class="font-semibold text-xs text-700">City</label>
+                      <input type="text" formControlName="city" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="e.g. Cairo" />
+                      @if (addressForm.get('city')?.touched && addressForm.get('city')?.invalid) {
+                        <span class="text-xs text-red-500">City is required.</span>
+                      }
+                    </div>
+                    <div class="col-12 form-group flex flex-column gap-1 mb-3">
+                      <label class="font-semibold text-xs text-700">Address Details</label>
+                      <textarea formControlName="details" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="Street, Building No, Floor..." rows="2"></textarea>
+                      @if (addressForm.get('details')?.touched && addressForm.get('details')?.invalid) {
+                        <span class="text-xs text-red-500">Details are required.</span>
+                      }
+                    </div>
+                    <div class="col-12 md:col-6 form-group flex flex-column gap-1 mb-3">
+                      <label class="font-semibold text-xs text-700">Phone</label>
+                      <input type="text" formControlName="phone" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="e.g. 01xxxxxxxxx" />
+                      @if (addressForm.get('phone')?.touched && addressForm.get('phone')?.invalid) {
+                        <span class="text-xs text-red-500">Please enter a valid 11 digit Egyptian mobile number.</span>
+                      }
+                    </div>
+                    <div class="col-12 md:col-6 form-group flex flex-column gap-1 mb-3">
+                      <label class="font-semibold text-xs text-700">Postal Code</label>
+                      <input type="text" formControlName="postalCode" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="e.g. 12345" />
+                    </div>
+                    <div class="col-12 flex justify-content-end gap-2 mt-2">
+                      <button type="button" class="btn-secondary py-2 px-3 text-xs" (click)="closeAddressForm()">Cancel</button>
+                      <button type="submit" class="btn-primary py-2 px-3 text-xs">Save Address</button>
+                    </div>
+                  </form>
+                </div>
+              }
+
+              <!-- Addresses list -->
+              @if (addressLoading) {
+                <div class="text-center py-5">
+                  <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                </div>
+              } @else {
+                @if (addresses.length > 0) {
+                  <div class="flex flex-column gap-3">
+                    @for (addr of addresses; track addr._id) {
+                      <div class="p-3 border-round-xl border-1 border-200 flex justify-content-between align-items-center bg-white" [class.border-primary]="defaultAddressId === (addr._id || addr.id)" [style.background]="defaultAddressId === (addr._id || addr.id) ? 'rgba(249, 115, 22, 0.02)' : 'white'">
+                        <div>
+                          <div class="flex align-items-center gap-2 mb-1">
+                            <span class="font-bold text-900 capitalize">{{ addr.alias }}</span>
+                            @if (defaultAddressId === (addr._id || addr.id)) {
+                              <span class="text-xs bg-orange-100 text-orange-600 font-bold px-2 py-0.5 border-round-md">Default</span>
+                            }
+                          </div>
+                          <p class="text-sm text-color-secondary m-0 mb-1">{{ addr.details }}, {{ addr.city }}</p>
+                          <span class="text-xs text-500"><i class="pi pi-phone text-xs mr-1"></i>{{ addr.phone }}</span>
+                        </div>
+                        <div class="flex align-items-center gap-2">
+                          @if (defaultAddressId !== (addr._id || addr.id)) {
+                            <button type="button" class="btn-text text-primary text-xs font-semibold cursor-pointer border-none bg-transparent hover:underline" (click)="setDefaultAddress(addr._id || addr.id || '')">Set Default</button>
+                          }
+                          <button type="button" class="btn-secondary p-2 text-color-secondary hover:bg-100 border-none cursor-pointer border-round-md" (click)="openEditAddress(addr)" title="Edit"><i class="pi pi-pencil text-sm"></i></button>
+                          <button type="button" class="btn-secondary p-2 text-red-500 hover:bg-red-50 border-none cursor-pointer border-round-md" (click)="removeAddress(addr._id || addr.id || '')" title="Delete"><i class="pi pi-trash text-sm"></i></button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-center py-6">
+                    <i class="pi pi-map text-5xl text-300 mb-2"></i>
+                    <p class="text-color-secondary m-0">No shipping addresses saved yet.</p>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- TAB: ORDER HISTORY -->
+          @if (activeTab === 'orders') {
+            <div>
+              <h2 class="text-xl font-bold text-900 mb-4 flex align-items-center gap-2"><i class="pi pi-shopping-bag text-primary"></i> Purchased Orders History</h2>
+              
+              @if (ordersLoading) {
+                <div class="text-center py-5">
+                  <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                </div>
+              } @else {
+                @if (orders.length > 0) {
+                  <div class="flex flex-column gap-4">
+                    @for (order of orders; track order._id) {
+                      <div class="order-box border-1 border-200 border-round-xl overflow-hidden shadow-1 bg-white">
+                        <!-- Order Header info -->
+                        <div class="flex flex-column sm:flex-row justify-content-between p-3 bg-50 border-bottom-1 border-200 gap-2">
+                          <div>
+                            <span class="text-xs text-500 uppercase">Order ID</span>
+                            <h4 class="font-bold text-900 m-0 text-sm mt-0.5">{{ order._id }}</h4>
+                          </div>
+                          <div>
+                            <span class="text-xs text-500">Date</span>
+                            <span class="font-bold text-900 block text-sm mt-0.5">{{ order.createdAt | date:'mediumDate' }}</span>
+                          </div>
+                          <div>
+                            <span class="text-xs text-500">Total Price</span>
+                            <span class="font-bold text-primary block text-sm mt-0.5">$ {{ order.totalOrderPrice }}</span>
+                          </div>
+                          <div>
+                            <span class="text-xs text-500">Payment Status</span>
+                            <span class="font-bold px-2 py-0.5 border-round-md text-xs block mt-0.5 w-max"
+                                  [class.bg-green-100]="order.isPaid" [class.text-green-600]="order.isPaid"
+                                  [class.bg-yellow-100]="!order.isPaid" [class.text-yellow-600]="!order.isPaid">
+                              {{ order.isPaid ? 'Paid' : 'Pending Payment' }}
+                            </span>
+                          </div>
+                          <div>
+                            <span class="text-xs text-500">Delivery Status</span>
+                            <span class="font-bold px-2 py-0.5 border-round-md text-xs block mt-0.5 w-max"
+                                  [class.bg-blue-100]="order.isDelivered" [class.text-blue-600]="order.isDelivered"
+                                  [class.bg-yellow-100]="!order.isDelivered" [class.text-yellow-600]="!order.isDelivered">
+                              {{ order.isDelivered ? 'Delivered' : 'Pending Delivery' }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <!-- Order items list -->
+                        <div class="p-3 flex flex-column gap-3">
+                          @for (item of order.cartItems; track item._id) {
+                            <div class="flex align-items-center gap-3">
+                              <div class="w-3rem h-3rem overflow-hidden border-round-md bg-100 flex align-items-center justify-content-center">
+                                @if (item.product?.imageCover) {
+                                  <img [src]="item.product.imageCover" [alt]="item.product?.title" class="w-full h-full object-cover" />
+                                } @else {
+                                  <i class="pi pi-image text-400"></i>
+                                }
+                              </div>
+                              <div class="flex-1">
+                                <h5 class="font-bold text-900 m-0 text-sm">{{ item.product?.title || 'Product Item' }}</h5>
+                                @if (item.color) {
+                                  <span class="text-xs text-color-secondary">Color: {{ item.color }}</span>
+                                }
+                              </div>
+                              <div class="text-right">
+                                <span class="font-bold text-900 text-sm">$ {{ item.price }}</span>
+                                <span class="text-xs text-500 block">Qty: {{ item.quantity }}</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-center py-6">
+                    <i class="pi pi-shopping-bag text-5xl text-300 mb-2"></i>
+                    <p class="text-color-secondary m-0">No purchase history found.</p>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

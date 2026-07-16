@@ -1,0 +1,95 @@
+<div class="dashboard-home">
+  <h1 class="page-title">Dashboard Overview</h1>
+
+  @if (loading) {
+  <div class="loading-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Loading dashboard...</p>
+  </div>
+  } @else {
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card stat-users">
+      <div class="stat-icon"><i class="pi pi-users"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.usersCount }}</span>
+        <span class="stat-label">Total Users</span>
+      </div>
+    </div>
+    <div class="stat-card stat-products">
+      <div class="stat-icon"><i class="pi pi-box"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.productsCount }}</span>
+        <span class="stat-label">Products</span>
+      </div>
+    </div>
+    <div class="stat-card stat-orders">
+      <div class="stat-icon"><i class="pi pi-shopping-cart"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.ordersCount }}</span>
+        <span class="stat-label">Orders</span>
+      </div>
+    </div>
+    <div class="stat-card stat-revenue">
+      <div class="stat-icon"><i class="pi pi-dollar"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">${{ stats.totalRevenue | number : '1.0-0' }}</span>
+        <span class="stat-label">Revenue</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="pi pi-clock"></i> Recent Orders
+    </h2>
+    @if (stats.recentOrders && stats.recentOrders.length > 0) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Paid</th>
+            <th>Delivered</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of stats.recentOrders; track order._id) {
+          <tr>
+            <td class="order-id">{{ order._id | slice : -8 }}</td>
+            <td>{{ order.user?.name || 'N/A' }}</td>
+            <td class="price">${{ order.totalOrderPrice | number : '1.2-2' }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="order.isPaid"
+                [class.badge-warning]="!order.isPaid"
+              >
+                {{ order.isPaid ? 'Paid' : 'Pending' }}
+              </span>
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="order.isDelivered"
+                [class.badge-warning]="!order.isDelivered"
+              >
+                {{ order.isDelivered ? 'Delivered' : 'Processing' }}
+              </span>
+            </td>
+            <td>{{ order.createdAt | date : 'short' }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="empty-state">No orders yet</p>
+    }
+  </div>
+  }
+</div>

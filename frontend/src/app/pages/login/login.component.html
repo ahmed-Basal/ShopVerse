@@ -1,0 +1,97 @@
+<div class="auth-page-container">
+  <div class="auth-card">
+    <div class="auth-logo-container">
+      <img src="./assets/logo.svg" alt="Logo" class="auth-logo" />
+    </div>
+
+    <div class="auth-header">
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Enter your credentials to access your account</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="auth-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-envelope"></i>
+          </span>
+          <input
+            id="email"
+            pInputText
+            formControlName="email"
+            placeholder="Enter your email"
+            [autofocus]="true"
+          />
+        </div>
+        @if (email.touched && email.invalid) {
+          <div class="auth-inline-error">
+            @if (email.getError('required')) {
+              <span>Email address is required.</span>
+            } @else if (email.getError('email')) {
+              <span>Please enter a valid email address.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-lock"></i>
+          </span>
+          <p-password
+            id="password"
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            placeholder="Enter your password"
+            [style]="{ width: '100%' }"
+            inputStyleClass="w-full border-none bg-transparent"
+          ></p-password>
+        </div>
+        @if (password.touched && password.invalid) {
+          <div class="auth-inline-error">
+            @if (password.getError('required')) {
+              <span>Password is required.</span>
+            } @else if (password.getError('minlength')) {
+              <span>Password must be at least 3 characters.</span>
+            } @else if (password.getError('maxlength')) {
+              <span>Password cannot exceed 20 characters.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Forgot Link and Login button -->
+      <div class="flex flex-column gap-3 mt-2">
+        <div class="flex justify-content-start">
+          <a routerLink="/forgot-password" class="text-accent text-sm font-semibold hover:underline">Forgot Password?</a>
+        </div>
+        
+        <div class="auth-submit-btn">
+          <button
+            pButton
+            type="submit"
+            label="Login"
+            [disabled]="loading"
+            class="w-full"
+          >
+            @if (loading) {
+              <i class="pi pi-spin pi-spinner mr-2"></i>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer navigation -->
+      <p class="auth-footer-text">
+        Don't have an account?
+        <a routerLink="/register">Sign up</a>
+      </p>
+    </form>
+  </div>
+</div>

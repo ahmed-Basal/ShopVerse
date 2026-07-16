@@ -1,0 +1,108 @@
+<div class="coupons-management">
+  <div class="header-section flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title m-0">Coupons Management</h1>
+    <button class="add-btn py-2 px-3 border-round-xl font-bold cursor-pointer flex align-items-center gap-2" (click)="openAddForm()">
+      <i class="pi pi-plus"></i> Add Coupon
+    </button>
+  </div>
+
+  @if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-card bg-white p-4 border-round-2xl shadow-3">
+      <div class="modal-header flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0 text-xl font-bold">Add New Coupon</h2>
+        <button class="close-btn bg-transparent border-none cursor-pointer" (click)="closeForm()">
+          <i class="pi pi-times text-xl"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="couponForm" (ngSubmit)="submit()" class="modal-form flex flex-column gap-3">
+        <div class="form-group flex flex-column gap-1">
+          <label for="name" class="font-semibold text-sm">Coupon Code Name</label>
+          <input id="name" type="text" formControlName="name" class="p-2 border-1 border-200 border-round-lg" placeholder="e.g. DISCOUNT50" style="text-transform: uppercase;" />
+          @if (couponForm.get('name')?.touched && couponForm.get('name')?.invalid) {
+            <span class="error-text text-red-500 text-xs">Code name is required (min 3 characters).</span>
+          }
+        </div>
+
+        <div class="form-group flex flex-column gap-1">
+          <label for="expire" class="font-semibold text-sm">Expiration Date</label>
+          <input id="expire" type="date" formControlName="expire" class="p-2 border-1 border-200 border-round-lg" />
+          @if (couponForm.get('expire')?.touched && couponForm.get('expire')?.invalid) {
+            <span class="error-text text-red-500 text-xs">Expiration date is required.</span>
+          }
+        </div>
+
+        <div class="form-group flex flex-column gap-1">
+          <label for="discount" class="font-semibold text-sm">Discount (%)</label>
+          <input id="discount" type="number" formControlName="discount" class="p-2 border-1 border-200 border-round-lg" placeholder="Percentage (1-100)" />
+          @if (couponForm.get('discount')?.touched && couponForm.get('discount')?.invalid) {
+            <span class="error-text text-red-500 text-xs">Valid discount percentage (1-100) is required.</span>
+          }
+        </div>
+
+        <div class="form-actions flex justify-content-end gap-2 mt-3">
+          <button type="button" class="btn-secondary py-2 px-4 border-round-lg cursor-pointer" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary py-2 px-4 border-round-lg cursor-pointer font-bold" [disabled]="loading">
+            @if (loading) {
+              <i class="pi pi-spin pi-spinner"></i> Saving...
+            } @else {
+              Create
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  @if (loading && coupons.length === 0) {
+  <div class="loading-container text-center py-5">
+    <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+    <p class="text-color-secondary mt-2">Loading coupons list...</p>
+  </div>
+  } @else {
+  <div class="section-card bg-white p-4 border-round-2xl shadow-1">
+    @if (coupons.length > 0) {
+    <div class="table-container overflow-x-auto">
+      <table class="data-table w-full text-left" style="border-collapse: collapse;">
+        <thead>
+          <tr class="border-bottom-1 border-200 bg-50">
+            <th class="p-3 text-sm font-bold text-700">Code Name</th>
+            <th class="p-3 text-sm font-bold text-700">Expiration Date</th>
+            <th class="p-3 text-sm font-bold text-700">Discount (%)</th>
+            <th class="p-3 text-sm font-bold text-700">Status</th>
+            <th class="p-3 text-sm font-bold text-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of coupons; track coupon._id) {
+          <tr class="border-bottom-1 border-100 hover:bg-50 transition-colors">
+            <td class="p-3 font-bold text-900 uppercase">{{ coupon.name }}</td>
+            <td class="p-3 text-color-secondary">{{ coupon.expire | date:'mediumDate' }}</td>
+            <td class="p-3 font-bold text-primary">{{ coupon.discount }}%</td>
+            <td class="p-3">
+              <span class="font-bold px-2 py-0.5 border-round-md text-xs"
+                    [class.bg-green-100]="((coupon.expire | date:'yyyy-MM-dd') || '') >= todayString" 
+                    [class.text-green-600]="((coupon.expire | date:'yyyy-MM-dd') || '') >= todayString"
+                    [class.bg-red-100]="((coupon.expire | date:'yyyy-MM-dd') || '') < todayString" 
+                    [class.text-red-600]="((coupon.expire | date:'yyyy-MM-dd') || '') < todayString">
+                {{ ((coupon.expire | date:'yyyy-MM-dd') || '') >= todayString ? 'Active' : 'Expired' }}
+              </span>
+            </td>
+            <td class="p-3">
+              <button class="action-btn delete-btn p-2 border-none bg-red-100 hover:bg-red-200 text-red-600 border-round-md cursor-pointer" (click)="deleteCoupon(coupon._id)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p class="empty-state text-center py-5 text-color-secondary">No coupons created yet.</p>
+    }
+  </div>
+  }
+</div>

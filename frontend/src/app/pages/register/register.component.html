@@ -1,0 +1,146 @@
+<div class="auth-page-container">
+  <div class="auth-card">
+    <div class="auth-logo-container">
+      <img src="./assets/logo.svg" alt="Logo" class="auth-logo" />
+    </div>
+
+    <div class="auth-header">
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Enter your details to create a new account</p>
+    </div>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="submit()" class="auth-form">
+     
+      <div class="form-group">
+        <label for="name">Username</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-user"></i>
+          </span>
+          <input
+            id="name"
+            pInputText
+            formControlName="name"
+            placeholder="Choose a username"
+            [autofocus]="true"
+          />
+        </div>
+        @if (name.touched && name.invalid) {
+          <div class="auth-inline-error">
+            @if (name.getError('required')) {
+              <span>Username is required.</span>
+            } @else if (name.getError('minlength')) {
+              <span>Username must be at least 3 characters.</span>
+            } @else if (name.getError('maxlength')) {
+              <span>Username cannot exceed 20 characters.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-envelope"></i>
+          </span>
+          <input
+            id="email"
+            pInputText
+            formControlName="email"
+            placeholder="Enter your email"
+          />
+        </div>
+        @if (email.touched && email.invalid) {
+          <div class="auth-inline-error">
+            @if (email.getError('required')) {
+              <span>Email address is required.</span>
+            } @else if (email.getError('email')) {
+              <span>Please enter a valid email address.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-lock"></i>
+          </span>
+          <p-password
+            id="password"
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            placeholder="Enter your password"
+            [style]="{ width: '100%' }"
+            inputStyleClass="w-full border-none bg-transparent"
+          ></p-password>
+        </div>
+        @if (password.touched && password.invalid) {
+          <div class="auth-inline-error">
+            @if (password.getError('required')) {
+              <span>Password is required.</span>
+            } @else if (password.getError('minlength')) {
+              <span>Password must be at least 3 characters.</span>
+            } @else if (password.getError('maxlength')) {
+              <span>Password cannot exceed 20 characters.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="form-group">
+        <label for="rePassword">Confirm Password</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="pi pi-lock"></i>
+          </span>
+          <p-password
+            id="rePassword"
+            formControlName="rePassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            placeholder="Confirm your password"
+            [style]="{ width: '100%' }"
+            inputStyleClass="w-full border-none bg-transparent"
+          ></p-password>
+        </div>
+        @if (rePassword.touched && rePassword.invalid) {
+          <div class="auth-inline-error">
+            @if (rePassword.getError('required')) {
+              <span>Please confirm your password.</span>
+            } @else if (rePassword.getError('passNotMatch')) {
+              <span>Passwords do not match.</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Sign Up Button -->
+      <div class="auth-submit-btn mt-2">
+        <button
+          pButton
+          type="submit"
+          label="Sign Up"
+          [disabled]="loading"
+          class="w-full"
+        >
+          @if (loading) {
+            <i class="pi pi-spin pi-spinner mr-2"></i>
+          }
+        </button>
+      </div>
+
+      <!-- Footer navigation -->
+      <p class="auth-footer-text">
+        Already have an account?
+        <a routerLink="/login">Login</a>
+      </p>
+    </form>
+  </div>
+</div>

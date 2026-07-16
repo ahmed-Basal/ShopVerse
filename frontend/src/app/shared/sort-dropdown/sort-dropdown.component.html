@@ -1,0 +1,20 @@
+<div class="sort-dropdown">
+  <div class="dropdown-trigger" [class.open]="isOpen" (click)="toggle()">
+    <span>{{ selectedLabel }}</span>
+    <i class="pi pi-chevron-down"></i>
+  </div>
+  <ul class="dropdown-menu" [class.open]="isOpen">
+    @for (opt of options; track opt.value) {
+      <li
+        class="dropdown-item"
+        [class.selected]="opt.value === selectedValue"
+        (click)="selectOption(opt)"
+      >
+        <span>{{ opt.label }}</span>
+        @if (opt.value === selectedValue) {
+          <i class="pi pi-check text-xs"></i>
+        }
+      </li>
+    }
+  </ul>
+</div>
