@@ -64,13 +64,27 @@
 
           <button
             type="button"
-            (click)="addToCart(product); product.isAddedToCart = true"
-            [class.bg-emerald-500]="product.isAddedToCart"
+            (click)="toggleCart(product)"
+            [class.bg-emerald-600]="product.isAddedToCart"
+            [class.hover:bg-red-500]="product.isAddedToCart"
             [class.bg-blue]="!product.isAddedToCart"
-            class="px-3.5 py-1.5 rounded-xl text-white text-xs font-semibold shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer"
+            [class.hover:bg-blue-hover]="!product.isAddedToCart"
+            class="group/btn px-3.5 py-1.5 rounded-xl text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            [title]="product.isAddedToCart ? 'Click to remove from cart' : 'Add to cart'"
           >
-            <i class="pi" [class.pi-check]="product.isAddedToCart" [class.pi-shopping-cart]="!product.isAddedToCart"></i>
-            <span>{{ product.isAddedToCart ? 'Added' : 'Add to Cart' }}</span>
+            @if (product.isAddedToCart) {
+              <span class="flex items-center gap-1.5 group-hover/btn:hidden">
+                <i class="pi pi-check text-xs"></i>
+                <span>Added</span>
+              </span>
+              <span class="hidden group-hover/btn:flex items-center gap-1.5 text-white">
+                <i class="pi pi-trash text-xs"></i>
+                <span>Remove</span>
+              </span>
+            } @else {
+              <i class="pi pi-shopping-cart text-xs"></i>
+              <span>Add to Cart</span>
+            }
           </button>
         </div>
       </div>

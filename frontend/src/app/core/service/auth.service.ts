@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { API_ENDPOINTS } from '../apiRoot/baseUrl';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { API_ENDPOINTS, baseUrl } from '../apiRoot/baseUrl';
 import { CartService } from './cart.service';
 import { UserDataService } from './user-data.service';
 import { RegisterRequestModel } from '../models/auth/register-request.model';
@@ -26,7 +27,29 @@ export class AuthService {
     private router: Router,
     private _userData: UserDataService,
     private _cart: CartService
-  ) {}
+  ) {
+    if (this.authorized()) {
+      this.refreshUserRole().subscribe({
+        next: () => {},
+        error: () => {}
+      });
+    }
+  }
+
+  refreshUserRole(): Observable<any> {
+    return this._httpClient.get<any>(`${baseUrl}/api/v1/users/getMe`).pipe(
+      tap((res) => {
+        const user = res.data;
+        if (user && user.role) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('userRole', user.role);
+            if (user.name) localStorage.setItem('username', user.name);
+          }
+          this._userData.userName.next(user.name);
+        }
+      })
+    );
+  }
 
   saveSession(token: string, username: string, role: string): void {
     if (typeof window !== 'undefined') {

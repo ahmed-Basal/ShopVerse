@@ -1,74 +1,184 @@
-<div class="min-h-screen py-10 max-w-7xl mx-auto px-4">
-  <!-- Header -->
-  <div class="mb-10 text-center max-w-2xl mx-auto">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue/10 border border-blue/30 text-blue text-xs font-bold uppercase tracking-wider mb-3">
-      <i class="pi pi-th-large text-cyan"></i> Collections
-    </div>
-    <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-      Browse <span class="bg-gradient-to-r from-blue to-cyan bg-clip-text text-transparent">Categories</span>
-    </h1>
-    <p class="text-ocean-300 text-sm md:text-base mt-2">
-      Navigate across our top curated departments and discover tailor-made selections.
-    </p>
-  </div>
+<div class="min-h-screen bg-ocean-950 text-slate-100 py-10 sm:py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Hero Header -->
+    <div class="mb-12 text-center max-w-3xl mx-auto space-y-4">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue/10 border border-blue/30 text-blue text-xs font-bold uppercase tracking-wider shadow-sm">
+        <i class="pi pi-th-large text-cyan-400"></i>
+        <span>Featured Departments</span>
+      </div>
 
-  @if (loading) {
-    <div class="flex flex-col items-center justify-center py-20 gap-3">
-      <i class="pi pi-spin pi-spinner text-4xl text-blue"></i>
-      <p class="text-sm text-ocean-300">Loading categories...</p>
-    </div>
-  } @else {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for (category of categories; track category._id) {
-        <div class="group flex flex-col rounded-2xl bg-ocean-800 border border-ocean-500/50 hover:border-blue/50 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
-          <!-- Image -->
-          <a [routerLink]="['/categories', category._id]"
-             class="relative h-48 w-full bg-ocean-900 block overflow-hidden cursor-pointer">
-            <img
-              [src]="getImageCategory(category)"
-              [alt]="category.name"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-ocean-950 via-ocean-950/30 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-              <span class="text-lg font-bold text-white tracking-tight">{{ category.name }}</span>
-              <span class="px-2.5 py-1 rounded-lg bg-blue text-white text-[11px] font-semibold flex items-center gap-1 shadow-sm">
-                <span>Explore</span>
-                <i class="pi pi-arrow-right text-[9px]"></i>
-              </span>
-            </div>
-          </a>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+        Explore <span class="bg-gradient-to-r from-blue via-cyan to-teal-300 bg-clip-text text-transparent">Categories</span>
+      </h1>
 
-          <!-- Details & Accordion for Subcategories -->
-          <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
-            <div (click)="toggleCategory(category._id)"
-                 class="flex items-center justify-between cursor-pointer py-1 text-ocean-200 hover:text-white transition-colors">
-              <span class="text-xs font-semibold text-ocean-300 uppercase tracking-wider">Subcategories</span>
-              <i class="pi text-xs text-ocean-400 transition-transform duration-200"
-                 [class.rotate-180]="expandedCategories[category._id]"
-                 [class.pi-chevron-down]="true"></i>
-            </div>
+      <p class="text-ocean-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+        Browse across our curated catalog of high quality departments, discover subcategories, and shop top-rated collections.
+      </p>
 
-            <!-- Subcategories List -->
-            @if (expandedCategories[category._id]) {
-              <div class="pt-2 border-t border-ocean-600/40 animate-slide-down">
-                @if (categorySubcategoriesMap[category._id] && categorySubcategoriesMap[category._id].length > 0) {
-                  <div class="flex flex-wrap gap-2">
-                    @for (sub of categorySubcategoriesMap[category._id]; track sub._id) {
-                      <a [routerLink]="['/categories', category._id]"
-                         class="px-2.5 py-1 rounded-lg bg-ocean-700/80 border border-ocean-500/50 hover:border-blue/50 text-[11px] font-medium text-ocean-200 hover:text-white transition-all">
-                        {{ sub.name }}
-                      </a>
-                    }
-                  </div>
-                } @else {
-                  <p class="text-[11px] text-ocean-400">No subcategories listed</p>
-                }
-              </div>
+      <!-- Search & Filter Bar -->
+      <div class="pt-4 max-w-md mx-auto">
+        <div class="relative flex items-center">
+          <i class="pi pi-search absolute left-4 text-ocean-400 text-sm"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search categories or subcategories..."
+            class="w-full pl-11 pr-10 py-3 rounded-2xl bg-ocean-900/90 border border-ocean-700/80 text-white placeholder-ocean-400 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 shadow-lg shadow-black/40 backdrop-blur-md transition-all"
+          />
+          @if (searchQuery) {
+            <button
+              type="button"
+              (click)="clearSearch()"
+              class="absolute right-3.5 p-1 rounded-lg text-ocean-400 hover:text-white transition-colors"
+              title="Clear search"
+            >
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          }
+        </div>
+
+        @if (!loading) {
+          <div class="flex items-center justify-between text-xs text-ocean-400 px-2 mt-2.5">
+            <span>Showing {{ filteredCategories.length }} of {{ categories.length }} categories</span>
+            @if (searchQuery) {
+              <button (click)="clearSearch()" class="text-cyan-400 hover:underline cursor-pointer">
+                Reset filter
+              </button>
             }
           </div>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="flex flex-col items-center justify-center py-24 gap-3 text-center">
+        <i class="pi pi-spin pi-spinner text-5xl text-cyan-400 mb-2"></i>
+        <p class="text-base text-ocean-300 font-medium">Loading catalog categories...</p>
+      </div>
+    } @else {
+      @if (filteredCategories.length > 0) {
+        <!-- Categories Grid (3 Columns on Desktop, 2 on Tablet, 1 on Mobile) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          @for (category of filteredCategories; track (category.id || category._id)) {
+            <div class="group relative flex flex-col rounded-3xl bg-ocean-900/80 border border-ocean-700/80 hover:border-cyan-400/60 backdrop-blur-md overflow-hidden shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 hover:-translate-y-1.5">
+              
+              <!-- Category Cover Image Stage -->
+              <a [routerLink]="['/categories', category.id || category._id]"
+                 class="relative h-56 sm:h-64 w-full bg-ocean-950 block overflow-hidden cursor-pointer">
+                
+                <!-- Ambient Glow behind image -->
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/20 transition-all duration-700"></div>
+
+                <img
+                  #catImg
+                  [src]="category.image | imageUrl"
+                  (error)="catImg.src = './assets/product-1.jpg'"
+                  [alt]="category.name"
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+
+                <!-- Dark Gradient Vignette for Text Legibility -->
+                <div class="absolute inset-0 bg-gradient-to-t from-ocean-950 via-ocean-950/50 to-transparent"></div>
+
+                <!-- Floating Top Badges -->
+                <div class="absolute top-4 left-4 z-10">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-ocean-950/80 border border-ocean-700/80 text-ocean-200 backdrop-blur-md shadow-md">
+                    <i class="pi pi-sitemap text-cyan-400 text-[10px]"></i>
+                    <span>{{ categorySubcategoriesMap[category.id || category._id]?.length || 0 }} sub</span>
+                  </span>
+                </div>
+
+                <!-- Bottom Image Bar: Title & Action -->
+                <div class="absolute bottom-4 left-4 right-4 z-10 flex items-end justify-between gap-3">
+                  <div class="overflow-hidden">
+                    <span class="text-xs font-semibold text-cyan-400 uppercase tracking-wider block mb-0.5">Department</span>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight truncate group-hover:text-cyan-300 transition-colors">
+                      {{ category.name }}
+                    </h3>
+                  </div>
+
+                  <span class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue to-cyan text-white text-xs font-bold flex items-center gap-1.5 shadow-blue group-hover:scale-105 transition-transform shrink-0">
+                    <span>Explore</span>
+                    <i class="pi pi-arrow-right text-[10px]"></i>
+                  </span>
+                </div>
+              </a>
+
+              <!-- Details & Subcategories Accordion Area -->
+              <div class="p-5 space-y-4 flex-1 flex flex-col justify-between bg-ocean-900/60 border-t border-ocean-800">
+                <div>
+                  <!-- Subcategories Toggle Header -->
+                  <div
+                    (click)="toggleCategory(category.id || category._id, $event)"
+                    class="flex items-center justify-between p-2.5 rounded-xl bg-ocean-800/60 hover:bg-ocean-800 border border-ocean-700/60 cursor-pointer transition-colors"
+                  >
+                    <span class="text-xs font-bold text-ocean-200 uppercase tracking-wider flex items-center gap-2">
+                      <i class="pi pi-tags text-cyan-400"></i>
+                      <span>Subcategories ({{ categorySubcategoriesMap[category.id || category._id]?.length || 0 }})</span>
+                    </span>
+                    <i
+                      class="pi text-xs text-ocean-300 transition-transform duration-200"
+                      [class.rotate-180]="expandedCategories[category.id || category._id]"
+                      [class.pi-chevron-down]="true"
+                    ></i>
+                  </div>
+
+                  <!-- Subcategories Drawer -->
+                  @if (expandedCategories[category.id || category._id]) {
+                    <div class="pt-3 animate-slide-down">
+                      @if (categorySubcategoriesMap[category.id || category._id] && categorySubcategoriesMap[category.id || category._id].length > 0) {
+                        <div class="flex flex-wrap gap-2">
+                          @for (sub of categorySubcategoriesMap[category.id || category._id]; track (sub.id || sub._id)) {
+                            <a
+                              [routerLink]="['/categories', category.id || category._id]"
+                              class="px-3 py-1.5 rounded-xl bg-ocean-800/90 border border-ocean-700/70 hover:border-cyan-400/60 text-xs font-medium text-ocean-200 hover:text-white hover:bg-ocean-700 transition-all shadow-sm flex items-center gap-1.5"
+                            >
+                              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                              <span>{{ sub.name }}</span>
+                            </a>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-xs text-ocean-400 italic py-1">No subcategories listed for this department.</p>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- View All Products in Category Button -->
+                <a
+                  [routerLink]="['/categories', category.id || category._id]"
+                  class="w-full py-2.5 rounded-xl bg-blue/15 hover:bg-blue/25 border border-blue/30 hover:border-blue/50 text-blue hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer group/link"
+                >
+                  <span>View All Products in {{ category.name }}</span>
+                  <i class="pi pi-chevron-right text-[10px] transition-transform group-hover/link:translate-x-1"></i>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty Filter Results -->
+        <div class="my-12 p-12 text-center rounded-3xl bg-ocean-900/80 border border-ocean-700/80 max-w-lg mx-auto shadow-2xl">
+          <div class="w-16 h-16 rounded-2xl bg-ocean-800 border border-ocean-700 flex items-center justify-center mx-auto mb-4 text-cyan-400 shadow-inner">
+            <i class="pi pi-search text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">No categories found</h3>
+          <p class="text-xs sm:text-sm text-ocean-300 mb-6 leading-relaxed">
+            We couldn't find any departments matching <strong class="text-white">"{{ searchQuery }}"</strong>.
+          </p>
+          <button
+            type="button"
+            (click)="clearSearch()"
+            class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue to-cyan hover:opacity-95 text-white font-bold text-xs shadow-blue transition-all cursor-pointer"
+          >
+            Show All Categories
+          </button>
         </div>
       }
-    </div>
-  }
+    }
+
+  </div>
 </div>

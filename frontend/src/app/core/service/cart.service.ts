@@ -58,7 +58,7 @@ export class CartService {
     );
   }
 
-  addToCart(product: ProductModel, color: string = 'Default') {
+  addToCart(product: ProductModel, color: string = 'Default', quantity: number = 1) {
     const hasToken = typeof window !== 'undefined' && localStorage.getItem('token') !== null;
     if (!hasToken) {
       this._notifecationsService.showWarn('Authentication Required', 'Please log in to add items to your cart.');
@@ -67,7 +67,8 @@ export class CartService {
 
     const body: CartAddRequestModel = {
       productId: product.id,
-      color: color
+      color: color,
+      quantity: quantity
     };
 
     this._httpClient.post<CartResponseModel>(API_ENDPOINTS.CART, body).subscribe({
@@ -116,7 +117,30 @@ export class CartService {
   }
 
   isAddedToCart(product: ProductModel): boolean {
-    return this.cartProductIds.includes(product.id);
+    const id = product.id || (product as any)._id;
+    return this.cartProductIds.includes(id);
+  }
+
+  removeFromCart(product: ProductModel): void {
+    const id = product.id || (product as any)._id;
+    this.removeCartItem(id).subscribe({
+      next: () => {
+        this._notifecationsService.showSuccess('Success', 'Item removed from cart');
+        this.cartProductIds = this.cartProductIds.filter(pid => pid !== id);
+        product.isAddedToCart = false;
+      },
+      error: (err) => {
+        this._notifecationsService.showError('Error', err.error?.message || 'Failed to remove item from cart.');
+      }
+    });
+  }
+
+  toggleCart(product: ProductModel): void {
+    if (this.isAddedToCart(product) || product.isAddedToCart) {
+      this.removeFromCart(product);
+    } else {
+      this.addToCart(product);
+    }
   }
 
   applyCoupon(coupon: string): Observable<CartResponseModel> {

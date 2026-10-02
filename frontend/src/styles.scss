@@ -89,12 +89,93 @@ body {
   font-family: inherit;
 }
 
-.p-toast .p-toast-message {
-  background: #111E33 !important;
-  color: #E8F4FD !important;
-  border: 1px solid #1A3055 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 12px !important;
+/* PrimeNG Toast Notifications — Positioned below fixed navbar, high z-index, responsive */
+.p-toast {
+  position: fixed !important;
+  z-index: 100000 !important;
+  width: 24rem !important;
+  max-width: calc(100vw - 32px) !important;
+
+  &.p-toast-top-right,
+  &:not([class*="p-toast-bottom-"]):not([class*="p-toast-center"]) {
+    top: 85px !important;
+    right: 20px !important;
+    left: auto !important;
+  }
+
+  .p-toast-message {
+    background: #0D1526 !important;
+    color: #E8F4FD !important;
+    border: 1px solid #1A3055 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7) !important;
+    border-radius: 16px !important;
+    margin-bottom: 0.75rem !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(12px) !important;
+
+    .p-toast-message-content {
+      padding: 1rem 1.25rem !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.85rem !important;
+
+      .p-toast-message-text {
+        margin: 0 !important;
+        flex: 1 !important;
+
+        .p-toast-summary {
+          font-weight: 700 !important;
+          font-size: 0.95rem !important;
+          color: #FFFFFF !important;
+        }
+
+        .p-toast-detail {
+          font-size: 0.85rem !important;
+          color: #94B3CC !important;
+          margin-top: 0.2rem !important;
+          line-height: 1.4 !important;
+        }
+      }
+
+      .p-toast-icon-close {
+        color: #94B3CC !important;
+        transition: all 0.2s !important;
+        border-radius: 8px !important;
+        &:hover {
+          color: #FFFFFF !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+        }
+      }
+    }
+
+    &.p-toast-message-success {
+      border-left: 4px solid #10B981 !important;
+      .p-toast-message-icon {
+        color: #10B981 !important;
+      }
+    }
+
+    &.p-toast-message-error {
+      border-left: 4px solid #EF4444 !important;
+      .p-toast-message-icon {
+        color: #EF4444 !important;
+      }
+    }
+
+    &.p-toast-message-warn {
+      border-left: 4px solid #F59E0B !important;
+      .p-toast-message-icon {
+        color: #F59E0B !important;
+      }
+    }
+
+    &.p-toast-message-info {
+      border-left: 4px solid #06B6D4 !important;
+      .p-toast-message-icon {
+        color: #06B6D4 !important;
+      }
+    }
+  }
 }
 
 .p-dialog {

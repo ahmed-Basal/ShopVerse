@@ -54,9 +54,11 @@ export class SubcategoryFormComponent implements OnInit {
       }
     } else {
       const parentCategory = this.category
-        ? this.category._id
+        ? (this.category._id || this.category.id || '')
         : (this.subcategory 
-          ? (typeof this.subcategory.category === 'object' ? this.subcategory.category._id : this.subcategory.category)
+          ? (typeof this.subcategory.category === 'object' 
+              ? (this.subcategory.category._id || this.subcategory.category.id || '') 
+              : (this.subcategory.category || (this.subcategory as any).categoryId || ''))
           : '');
 
       this.form = new FormGroup({
@@ -102,8 +104,9 @@ export class SubcategoryFormComponent implements OnInit {
         formData.append('image', this.imageUrl);
       }
 
+      const categoryId = (this.category?._id || this.category?.id || '') as string;
       const request$ = this.category
-        ? this._categoryService.updateCategory(this.category._id, formData)
+        ? this._categoryService.updateCategory(categoryId, formData)
         : this._categoryService.createCategory(formData);
 
       request$.subscribe({
@@ -132,8 +135,9 @@ export class SubcategoryFormComponent implements OnInit {
         formData.append('image', this.imageUrl);
       }
 
+      const subcategoryId = (this.subcategory?._id || this.subcategory?.id || '') as string;
       const request$ = this.subcategory
-        ? this._subcategoryService.updateSubcategory(this.subcategory._id, formData)
+        ? this._subcategoryService.updateSubcategory(subcategoryId, formData)
         : this._subcategoryService.createSubcategory(formData);
 
       request$.subscribe({

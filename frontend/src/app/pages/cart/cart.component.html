@@ -1,59 +1,118 @@
-<section class="py-5">
-  <div class="container">
-    <h1 class="text-color-secondary capitalize mb-4 font-bold text-3xl">all cart products</h1>
+<div class="min-h-screen bg-ocean-950 text-slate-100 py-8 sm:py-12">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
+    <!-- Header Section (Centered Alignment) -->
+    <div class="mb-8 flex items-center justify-between flex-wrap gap-4 border-b border-ocean-700/60 pb-5">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <i class="pi pi-shopping-bag text-cyan-400"></i>
+          <span>Shopping Cart</span>
+        </h1>
+        <p class="text-sm text-ocean-300 mt-1">Review your selected items and complete your purchase</p>
+      </div>
+
+      @if (cartItems.length > 0) {
+        <span class="px-3.5 py-1.5 rounded-full bg-ocean-800 border border-ocean-600/70 text-xs font-semibold text-ocean-200">
+          {{ cartItems.length }} {{ cartItems.length === 1 ? 'item' : 'items' }}
+        </span>
+      }
+    </div>
+
+    <!-- Loading State -->
     @if (loading && cartItems.length === 0) {
-      <div class="text-center py-6">
-        <i class="pi pi-spin pi-spinner text-4xl text-orange-500 mb-2"></i>
-        <p class="text-color-secondary">Loading cart...</p>
+      <div class="py-20 flex flex-col items-center justify-center text-center">
+        <i class="pi pi-spin pi-spinner text-5xl text-cyan-400 mb-4"></i>
+        <p class="text-base text-ocean-300 font-medium">Loading your cart items...</p>
       </div>
     } @else {
       @if (cartItems.length > 0) {
-        <div class="grid">
-          <!-- Cart Items List -->
-          <div class="col-12 lg:col-8">
-            <div class="flex flex-column gap-3">
+        <!-- Main Cart Grid: Items (8 cols) + Summary (4 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Left Column: Cart Items List -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="space-y-4">
               @for (item of cartItems; track (item.id || item._id)) {
-                <div class="cart-item-card flex flex-column sm:flex-row align-items-center p-4 gap-3 border-1 border-200 border-round-2xl bg-white shadow-1 transition-all">
-                  <!-- Product Image -->
-                  <div class="w-10rem h-10rem overflow-hidden border-round-xl bg-100 flex align-items-center justify-content-center">
+                <div class="group relative flex flex-col sm:flex-row items-center gap-5 p-4 sm:p-5 rounded-2xl bg-ocean-900/80 border border-ocean-700/80 hover:border-cyan-500/50 backdrop-blur-md shadow-lg hover:shadow-cyan-500/5 transition-all duration-300">
+                  
+                  <!-- Product Image with distinct bordered frame -->
+                  <div class="relative w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 rounded-2xl border-2 border-ocean-600/80 group-hover:border-cyan-400 bg-ocean-950 p-2 overflow-hidden shadow-inner flex items-center justify-center transition-colors">
                     @if (item.product?.imageCover) {
-                      <img #cartImg [src]="item.product.imageCover | imageUrl" (error)="cartImg.src = '/assets/product-1.jpg'" [alt]="item.product.title" class="w-full h-full object-cover" />
+                      <img
+                        #cartImg
+                        [src]="item.product.imageCover | imageUrl"
+                        (error)="cartImg.src = '/assets/product-1.jpg'"
+                        [alt]="item.product?.title"
+                        class="w-full h-full object-contain filter drop-shadow transition-transform duration-300 group-hover:scale-105"
+                      />
                     } @else {
-                      <i class="pi pi-image text-color-secondary text-2xl"></i>
+                      <i class="pi pi-image text-ocean-400 text-3xl"></i>
                     }
                   </div>
 
-                  <!-- Product details and controls -->
-                  <div class="flex flex-column sm:flex-row justify-content-between align-items-stretch flex-1 gap-3">
-                    <div class="flex flex-column justify-content-between">
-                      <div>
-                        <span class="text-xs font-bold text-500 uppercase">{{ item.product?.category?.name || item.product?.category || 'General' }}</span>
-                        <h3 class="text-lg font-bold text-900 mt-1 mb-2">{{ item.product?.title || 'Unknown Product' }}</h3>
-                        @if (item.color) {
-                          <span class="inline-block px-2 py-1 text-xs font-semibold text-color-secondary bg-100 border-round-md">Color: {{ item.color }}</span>
-                        }
-                      </div>
-                      
+                  <!-- Product Info & Actions -->
+                  <div class="flex-1 w-full flex flex-col justify-between gap-3 text-center sm:text-left">
+                    <div>
+                      <span class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+                        {{ item.product?.category?.name || item.product?.category || 'General' }}
+                      </span>
+                      <h3 class="text-base sm:text-lg font-bold text-white mt-0.5 line-clamp-2 hover:text-cyan-300 transition-colors cursor-pointer"
+                          [routerLink]="['/details', item.product?.id || item.product?._id]">
+                        {{ item.product?.title || 'Unknown Product' }}
+                      </h3>
+                      @if (item.color) {
+                        <span class="inline-block px-2.5 py-0.5 mt-1.5 text-xs font-medium rounded-md bg-ocean-800 text-ocean-200 border border-ocean-700">
+                          Color: {{ item.color }}
+                        </span>
+                      }
+                    </div>
+
+                    <!-- Bottom Bar: Quantity Controls & Price -->
+                    <div class="flex items-center justify-between flex-wrap gap-3 pt-2 border-t border-ocean-800">
                       <!-- Quantity Adjuster -->
-                      <div class="flex align-items-center gap-3 mt-3">
-                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" [disabled]="item.quantity <= 1" (click)="updateQuantity(item.id || item._id, item.quantity, false)">
+                      <div class="flex items-center border border-ocean-700 bg-ocean-950/80 rounded-xl p-0.5">
+                        <button
+                          type="button"
+                          class="w-8 h-8 flex items-center justify-center rounded-lg text-ocean-300 hover:text-white hover:bg-ocean-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                          [disabled]="item.quantity <= 1"
+                          (click)="updateQuantity(item.id || item._id, item.quantity, false)"
+                          title="Decrease quantity"
+                        >
                           <i class="pi pi-minus text-xs"></i>
                         </button>
-                        <span class="font-bold text-900">{{ item.quantity }}</span>
-                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" (click)="updateQuantity(item.id || item._id, item.quantity, true)">
+                        <span class="w-9 text-center font-bold text-white text-sm">{{ item.quantity }}</span>
+                        <button
+                          type="button"
+                          class="w-8 h-8 flex items-center justify-center rounded-lg text-ocean-300 hover:text-white hover:bg-ocean-800 transition-colors cursor-pointer"
+                          (click)="updateQuantity(item.id || item._id, item.quantity, true)"
+                          title="Increase quantity"
+                        >
                           <i class="pi pi-plus text-xs"></i>
                         </button>
                       </div>
-                    </div>
 
-                    <!-- Price & Actions -->
-                    <div class="flex flex-column justify-content-between align-items-end text-right">
-                      <span class="text-xl font-bold text-900">$ {{ (item.price * item.quantity).toFixed(2) }}</span>
-                      
-                      <button type="button" class="btn-danger-icon" (click)="removeItem(item.id || item._id)" title="Remove item">
-                        <i class="pi pi-trash"></i>
-                      </button>
+                      <!-- Subtotal & Remove Button -->
+                      <div class="flex items-center gap-4">
+                        <div class="text-right">
+                          <span class="text-lg sm:text-xl font-black text-cyan-400">
+                            $ {{ (item.price * item.quantity).toFixed(2) }}
+                          </span>
+                          @if (item.quantity > 1) {
+                            <span class="block text-[11px] text-ocean-400">
+                              (${{ item.price }} each)
+                            </span>
+                          }
+                        </div>
+
+                        <button
+                          type="button"
+                          (click)="removeItem(item.id || item._id)"
+                          class="p-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/15 transition-all cursor-pointer"
+                          title="Remove item"
+                        >
+                          <i class="pi pi-trash text-base"></i>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -61,50 +120,64 @@
             </div>
 
             <!-- Clear Cart Button -->
-            <button type="button" class="btn-secondary w-full uppercase mt-4 py-3 flex align-items-center justify-content-center gap-2" (click)="clearCart()">
-              <i class="pi pi-trash"></i> Clear Cart
+            <button
+              type="button"
+              (click)="clearCart()"
+              class="w-full py-3 rounded-2xl border border-red-500/30 hover:border-red-500/60 bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-semibold text-sm transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+            >
+              <i class="pi pi-trash"></i>
+              <span>Clear Entire Cart</span>
             </button>
           </div>
 
-          <!-- Cart Summary Panel -->
-          <div class="col-12 lg:col-4">
-            <div class="summary-card p-4 border-1 border-200 border-round-2xl bg-white shadow-1">
-              <h2 class="text-xl font-bold text-900 mb-4 border-bottom-1 border-200 pb-3">Order Summary</h2>
-              
-              <div class="flex justify-content-between mb-3 text-color-secondary font-medium">
-                <span>Subtotal</span>
-                <span>$ {{ totalCartPrice.toFixed(2) }}</span>
-              </div>
-              
-              <div class="flex justify-content-between mb-3 text-color-secondary font-medium">
-                <span>Shipping</span>
-                <span class="text-green-500 font-semibold">Free</span>
-              </div>
+          <!-- Right Column: Order Summary Panel (Sticky) -->
+          <div class="lg:col-span-4">
+            <div class="sticky top-24 rounded-3xl bg-ocean-900/90 border border-ocean-700/80 p-6 backdrop-blur-xl shadow-2xl space-y-5">
+              <h2 class="text-lg font-bold text-white border-b border-ocean-700/60 pb-3 flex items-center gap-2">
+                <i class="pi pi-receipt text-cyan-400"></i>
+                <span>Order Summary</span>
+              </h2>
 
-              @if (totalPriceAfterDiscount > 0 && totalPriceAfterDiscount < totalCartPrice) {
-                <div class="flex justify-content-between mb-4 text-green-500 font-semibold">
-                  <span>Discounted Price</span>
-                  <span>$ {{ totalPriceAfterDiscount }}</span>
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between text-ocean-200">
+                  <span>Subtotal</span>
+                  <span class="font-semibold text-white">$ {{ totalCartPrice.toFixed(2) }}</span>
                 </div>
-              }
+
+                <div class="flex justify-between text-ocean-200">
+                  <span>Shipping</span>
+                  <span class="text-emerald-400 font-semibold flex items-center gap-1">
+                    <i class="pi pi-check text-xs"></i> Free
+                  </span>
+                </div>
+
+                @if (totalPriceAfterDiscount > 0 && totalPriceAfterDiscount < totalCartPrice) {
+                  <div class="flex justify-between text-emerald-400 font-semibold pt-1 border-t border-ocean-800">
+                    <span>Discounted Price</span>
+                    <span>$ {{ totalPriceAfterDiscount.toFixed(2) }}</span>
+                  </div>
+                }
+              </div>
 
               <!-- Coupon Input Section -->
-              <div class="coupon-section border-top-1 border-200 pt-3 pb-3 mb-3">
-                <label class="block text-xs font-semibold text-color-secondary uppercase mb-2">Apply Coupon</label>
+              <div class="border-t border-ocean-700/60 pt-4">
+                <label class="block text-xs font-semibold text-ocean-300 uppercase tracking-wider mb-2">
+                  Have a Coupon?
+                </label>
                 <div class="flex gap-2">
                   <input
                     type="text"
                     [(ngModel)]="couponCode"
                     [disabled]="couponLoading"
-                    placeholder="Enter coupon code"
-                    class="p-2 border-1 border-200 border-round-lg w-full coupon-input"
+                    placeholder="Enter code"
+                    class="flex-1 px-3.5 py-2 rounded-xl bg-ocean-950 border border-ocean-700 text-white placeholder-ocean-400 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
                     (keydown.enter)="applyCoupon()"
                   />
                   <button
                     type="button"
                     [disabled]="couponLoading || !couponCode.trim()"
-                    class="btn-primary py-2 px-3 text-xs w-6rem flex align-items-center justify-content-center"
                     (click)="applyCoupon()"
+                    class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-ocean-950 font-bold text-xs uppercase tracking-wide transition-all cursor-pointer flex items-center justify-center"
                   >
                     @if (couponLoading) {
                       <i class="pi pi-spin pi-spinner"></i>
@@ -114,30 +187,50 @@
                   </button>
                 </div>
                 @if (couponError) {
-                  <span class="text-xs text-red-500 block mt-2">{{ couponError }}</span>
+                  <span class="text-xs text-rose-400 block mt-2 font-medium">{{ couponError }}</span>
                 }
               </div>
 
-              <div class="flex justify-content-between align-items-center border-top-1 border-200 pt-3 mb-4">
-                <span class="text-lg font-bold text-900">Total</span>
-                <span class="text-2xl font-bold text-primary">
+              <!-- Total Row -->
+              <div class="flex justify-between items-baseline pt-4 border-t border-ocean-700/60">
+                <div>
+                  <span class="text-base font-bold text-white">Estimated Total</span>
+                  <p class="text-[11px] text-ocean-400">Includes applicable taxes</p>
+                </div>
+                <span class="text-2xl font-black text-cyan-400">
                   $ {{ (totalPriceAfterDiscount > 0 ? totalPriceAfterDiscount : totalCartPrice).toFixed(2) }}
                 </span>
               </div>
 
-              <button type="button" class="btn-primary w-full py-3 text-center text-lg font-bold" (click)="openCheckout()">
-                Proceed to Checkout
+              <!-- Checkout CTA Button -->
+              <button
+                type="button"
+                (click)="openCheckout()"
+                class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-base tracking-wide shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all flex items-center justify-center gap-2 cursor-pointer group"
+              >
+                <span>Proceed to Checkout</span>
+                <i class="pi pi-arrow-right text-sm transition-transform group-hover:translate-x-1"></i>
               </button>
             </div>
           </div>
         </div>
       } @else {
-        <!-- Empty Cart State -->
-        <div class="empty-container text-center py-8 border-round-2xl border-1 border-200 bg-white">
-          <i class="pi pi-shopping-cart text-6xl text-300 mb-3"></i>
-          <h2 class="text-2xl font-bold text-900 mb-2">Your cart is empty</h2>
-          <p class="text-color-secondary mb-4">Explore our collections and add products to start shopping.</p>
-          <button type="button" class="btn-primary px-5 py-3" [routerLink]="['/products']">Shop Now</button>
+        <!-- Empty Cart State (Perfect Center) -->
+        <div class="max-w-lg mx-auto text-center py-16 px-6 rounded-3xl bg-ocean-900/80 border border-ocean-700/80 backdrop-blur-md shadow-2xl my-8">
+          <div class="w-20 h-20 mx-auto rounded-3xl bg-ocean-800/80 border border-ocean-700 flex items-center justify-center text-cyan-400 mb-6 shadow-inner">
+            <i class="pi pi-shopping-cart text-3xl"></i>
+          </div>
+          <h2 class="text-2xl font-extrabold text-white mb-2">Your Cart is Empty</h2>
+          <p class="text-sm text-ocean-300 mb-8 max-w-sm mx-auto leading-relaxed">
+            Looks like you haven't added anything to your cart yet. Explore our top products and find something you love!
+          </p>
+          <a
+            routerLink="/products"
+            class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
+          >
+            <i class="pi pi-compass"></i>
+            <span>Start Shopping</span>
+          </a>
         </div>
       }
     }
@@ -149,5 +242,6 @@
         (close)="closeCheckout()"
       ></app-checkout-form>
     }
+
   </div>
-</section>
+</div>

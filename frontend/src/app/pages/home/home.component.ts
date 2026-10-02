@@ -264,6 +264,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this._cart.addToCart(product);
   }
 
+  toggleCart(product: ProductModel): void {
+    this._cart.toggleCart(product);
+  }
+
   private _updateUrl(changes: Record<string, string | number | null>): void {
     const current = { ...this._route.snapshot.queryParams };
     for (const [key, value] of Object.entries(changes)) {

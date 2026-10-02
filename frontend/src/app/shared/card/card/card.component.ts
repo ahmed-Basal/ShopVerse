@@ -58,6 +58,10 @@ export class CardComponent implements OnInit {
     this._cartService.addToCart(product);
   }
 
+  toggleCart(product: ProductModel) {
+    this._cartService.toggleCart(product);
+  }
+
   toggleWishlist(product: ProductModel, event: Event): void {
     event.stopPropagation();
     if (!this._auth.authorized()) {

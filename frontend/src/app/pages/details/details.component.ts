@@ -250,8 +250,22 @@ export class DetailsComponent implements OnInit {
     });
   }
 
+  get unitPrice(): number {
+    if (this.appliedCoupon?.discountedPrice) {
+      return this.appliedCoupon.discountedPrice;
+    }
+    if (this.productDetails?.priceAfterDiscount && this.productDetails.priceAfterDiscount < this.productDetails.price) {
+      return this.productDetails.priceAfterDiscount;
+    }
+    return this.productDetails?.price || 0;
+  }
+
+  get totalPrice(): number {
+    return this.unitPrice * (this.quantity || 1);
+  }
+
   addToCart(product: ProductModel): void {
-    this._cartService.addToCart(product, this.selectedColor || 'Default');
+    this._cartService.addToCart(product, this.selectedColor || 'Default', this.quantity || 1);
     this.isAddedToCart = true;
     product.isAddedToCart = true;
   }

@@ -80,10 +80,16 @@ const cartInclude = {
 };
 
 exports.addProductToCart = asyncHandler(async (req, res, next) => {
-  const { productId, color } = req.body;
+  const { productId, color, quantity = 1 } = req.body;
+  const qty = Math.max(1, parseInt(quantity, 10) || 1);
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) return next(new ApiError("Product not found", 404));
+
+  const itemPrice =
+    product.priceAfterDiscount && product.priceAfterDiscount < product.price
+      ? product.priceAfterDiscount
+      : product.price;
 
   // Get or create cart
   let cart = await prisma.cart.findUnique({
@@ -95,9 +101,9 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
     cart = await prisma.cart.create({
       data: {
         userId: req.user.id,
-        totalCartPrice: product.price,
+        totalCartPrice: itemPrice * qty,
         cartItems: {
-          create: [{ productId, color: color || null, price: product.price, quantity: 1 }],
+          create: [{ productId, color: color || null, price: itemPrice, quantity: qty }],
         },
       },
       include: cartInclude,
@@ -110,11 +116,11 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
     if (existingItem) {
       await prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + 1 },
+        data: { quantity: existingItem.quantity + qty },
       });
     } else {
       await prisma.cartItem.create({
-        data: { cartId: cart.id, productId, color: color || null, price: product.price, quantity: 1 },
+        data: { cartId: cart.id, productId, color: color || null, price: itemPrice, quantity: qty },
       });
     }
 

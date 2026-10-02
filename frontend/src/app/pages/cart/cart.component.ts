@@ -73,38 +73,34 @@ export class CartComponent implements OnInit {
   }
 
   removeItem(itemId: string): void {
-    if (confirm('Remove this item from your cart?')) {
-      this.loading = true;
-      this._cartService.removeCartItem(itemId).subscribe({
-        next: () => {
-          this._notifecationsService.showSuccess('Success', 'Item removed from cart.');
-          this.loadCart();
-        },
-        error: (err) => {
-          this._notifecationsService.showError('Error', err.error?.message || 'Failed to remove item.');
-          this.loading = false;
-        }
-      });
-    }
+    this.loading = true;
+    this._cartService.removeCartItem(itemId).subscribe({
+      next: () => {
+        this._notifecationsService.showSuccess('Success', 'Item removed from cart.');
+        this.loadCart();
+      },
+      error: (err) => {
+        this._notifecationsService.showError('Error', err.error?.message || 'Failed to remove item.');
+        this.loading = false;
+      }
+    });
   }
 
   clearCart(): void {
-    if (confirm('Are you sure you want to clear your cart?')) {
-      this.loading = true;
-      this._cartService.clearCart().subscribe({
-        next: () => {
-          this._notifecationsService.showSuccess('Success', 'Cart cleared successfully.');
-          this.cartItems = [];
-          this.totalCartPrice = 0;
-          this.totalPriceAfterDiscount = 0;
-          this.loading = false;
-        },
-        error: (err) => {
-          this._notifecationsService.showError('Error', err.error?.message || 'Failed to clear cart.');
-          this.loading = false;
-        }
-      });
-    }
+    this.loading = true;
+    this._cartService.clearCart().subscribe({
+      next: () => {
+        this._notifecationsService.showSuccess('Success', 'Cart cleared successfully.');
+        this.cartItems = [];
+        this.totalCartPrice = 0;
+        this.totalPriceAfterDiscount = 0;
+        this.loading = false;
+      },
+      error: (err) => {
+        this._notifecationsService.showError('Error', err.error?.message || 'Failed to clear cart.');
+        this.loading = false;
+      }
+    });
   }
 
   openCheckout(): void {

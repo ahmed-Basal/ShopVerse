@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CategoryService } from '../../core/service/category.service';
 import { SubcategoryService } from '../../core/service/subcategory.service';
 import { AuthService } from '../../core/service/auth.service';
@@ -14,7 +14,14 @@ import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 @Component({
   selector: 'app-categories-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SubcategoryFormComponent, ImageUploaderComponent, ImageUrlPipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    SubcategoryFormComponent,
+    ImageUploaderComponent,
+    ImageUrlPipe,
+  ],
   templateUrl: './categories-management.component.html',
   styleUrl: './categories-management.component.scss',
 })
@@ -22,7 +29,9 @@ export class CategoriesManagementComponent implements OnInit {
   categories: CategoryModel[] = [];
   subcategories: SubcategoryModel[] = [];
   categorySubcategoriesMap: { [categoryId: string]: SubcategoryModel[] } = {};
-  expandedCategories: { [categoryId: string]: boolean } = {};
+
+  searchQuery = '';
+  viewMode: 'grid' | 'table' = 'grid';
 
   isEditMode = false;
   currentCategoryId = '';
@@ -38,6 +47,13 @@ export class CategoriesManagementComponent implements OnInit {
   selectedSubcategory: SubcategoryModel | null = null;
   selectedParentCategory: CategoryModel | null = null;
   isAdmin = false;
+
+  // Confirmation Delete modal state
+  showDeleteModal = false;
+  deleteTargetType: 'category' | 'subcategory' = 'category';
+  deleteTargetId = '';
+  deleteTargetName = '';
+  deleteLoading = false;
 
   constructor(
     private _categoryService: CategoryService,
@@ -63,7 +79,11 @@ export class CategoriesManagementComponent implements OnInit {
     this.loading = true;
     this._categoryService.getAllCategoriesAdmin().subscribe({
       next: (res) => {
-        this.categories = res.data;
+        this.categories = (res.data || []).map((cat: any) => ({
+          ...cat,
+          id: cat.id || cat._id,
+          _id: cat._id || cat.id,
+        }));
         this.loadSubcategories();
       },
       error: () => {
@@ -76,34 +96,63 @@ export class CategoriesManagementComponent implements OnInit {
   loadSubcategories(): void {
     this._subcategoryService.getAllSubcategories(1, 200).subscribe({
       next: (res) => {
-        this.subcategories = res.data;
+        this.subcategories = (res.data || []).map((sub: any) => ({
+          ...sub,
+          id: sub.id || sub._id,
+          _id: sub._id || sub.id,
+        }));
         this.mapSubcategories();
         this.loading = false;
       },
       error: () => {
         this._notifecationsService.showError('Error', 'Failed to load subcategories');
         this.loading = false;
-      }
+      },
     });
   }
 
   mapSubcategories(): void {
     this.categorySubcategoriesMap = {};
-    this.categories.forEach(cat => {
-      this.categorySubcategoriesMap[cat._id] = [];
+    this.categories.forEach((cat) => {
+      const primaryKey = cat.id || cat._id;
+      this.categorySubcategoriesMap[primaryKey] = [];
+      if (cat._id && cat._id !== primaryKey) {
+        this.categorySubcategoriesMap[cat._id] = this.categorySubcategoriesMap[primaryKey];
+      }
     });
-    this.subcategories.forEach(sub => {
-      const catId = typeof sub.category === 'object' ? sub.category._id : sub.category;
-      if (this.categorySubcategoriesMap[catId]) {
-        this.categorySubcategoriesMap[catId].push(sub);
+
+    this.subcategories.forEach((sub) => {
+      let catId = '';
+      if (typeof sub.category === 'object' && sub.category) {
+        catId = sub.category.id || sub.category._id || '';
       } else {
-        this.categorySubcategoriesMap[catId] = [sub];
+        catId = (sub.category || sub.categoryId || '') as string;
+      }
+
+      if (catId) {
+        if (!this.categorySubcategoriesMap[catId]) {
+          this.categorySubcategoriesMap[catId] = [];
+        }
+        this.categorySubcategoriesMap[catId].push(sub);
       }
     });
   }
 
-  toggleCategory(categoryId: string): void {
-    this.expandedCategories[categoryId] = !this.expandedCategories[categoryId];
+  getSubcategories(cat: CategoryModel): SubcategoryModel[] {
+    const id = cat.id || cat._id;
+    return this.categorySubcategoriesMap[id] || (cat._id ? this.categorySubcategoriesMap[cat._id] : []) || [];
+  }
+
+  get filteredCategories(): CategoryModel[] {
+    if (!this.searchQuery.trim()) {
+      return this.categories;
+    }
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.categories.filter(
+      (c) =>
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.slug && c.slug.toLowerCase().includes(q))
+    );
   }
 
   openAddForm(): void {
@@ -118,24 +167,28 @@ export class CategoriesManagementComponent implements OnInit {
 
   openEditForm(cat: CategoryModel): void {
     this.isEditMode = true;
-    this.currentCategoryId = cat._id;
+    this.currentCategoryId = (cat.id || cat._id) as string;
     this.categoryImageFile = null;
     this.categoryImageUrl = cat.image || '';
     this.categoryImagePreview = cat.image || null;
     this.showForm = true;
-    this.loading = true;
 
-    this._categoryService.getCategory(cat._id).subscribe({
+    this.categoryForm.patchValue({
+      name: cat.name || '',
+    });
+
+    this.loading = true;
+    this._categoryService.getCategory(this.currentCategoryId).subscribe({
       next: (res) => {
-        this.categoryForm.patchValue({
-          name: res.data.name,
-        });
+        if (res.data) {
+          this.categoryForm.patchValue({
+            name: res.data.name,
+          });
+        }
         this.loading = false;
       },
-      error: (err) => {
-        this._notifecationsService.showError('Error', 'Failed to load category details');
+      error: () => {
         this.loading = false;
-        this.closeForm();
       },
     });
   }
@@ -203,17 +256,54 @@ export class CategoriesManagementComponent implements OnInit {
     }
   }
 
-  deleteCategory(id: string): void {
-    if (confirm('Are you sure you want to delete this category? All products and subcategories belonging to it may be affected.')) {
-      this.loading = true;
-      this._categoryService.deleteCategory(id).subscribe({
+  // Delete Confirmation Dialog handlers
+  confirmDeleteCategory(cat: CategoryModel): void {
+    this.deleteTargetType = 'category';
+    this.deleteTargetId = (cat.id || cat._id) as string;
+    this.deleteTargetName = cat.name;
+    this.showDeleteModal = true;
+  }
+
+  confirmDeleteSubcategory(sub: SubcategoryModel): void {
+    this.deleteTargetType = 'subcategory';
+    this.deleteTargetId = (sub.id || sub._id) as string;
+    this.deleteTargetName = sub.name;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.deleteTargetId = '';
+    this.deleteTargetName = '';
+    this.deleteLoading = false;
+  }
+
+  executeDelete(): void {
+    if (!this.deleteTargetId) return;
+    this.deleteLoading = true;
+
+    if (this.deleteTargetType === 'category') {
+      this._categoryService.deleteCategory(this.deleteTargetId).subscribe({
         next: () => {
-          this._notifecationsService.showSuccess('Success', 'Category deleted successfully');
+          this._notifecationsService.showSuccess('Deleted', `Category "${this.deleteTargetName}" was deleted.`);
+          this.closeDeleteModal();
           this.loadCategories();
         },
         error: (err) => {
           this._notifecationsService.showError('Error', err.error?.message || 'Failed to delete category');
-          this.loading = false;
+          this.deleteLoading = false;
+        },
+      });
+    } else {
+      this._subcategoryService.deleteSubcategory(this.deleteTargetId).subscribe({
+        next: () => {
+          this._notifecationsService.showSuccess('Deleted', `Subcategory "${this.deleteTargetName}" was deleted.`);
+          this.closeDeleteModal();
+          this.loadCategories();
+        },
+        error: (err) => {
+          this._notifecationsService.showError('Error', err.error?.message || 'Failed to delete subcategory');
+          this.deleteLoading = false;
         },
       });
     }
@@ -247,21 +337,5 @@ export class CategoriesManagementComponent implements OnInit {
   onSubcategorySaved(): void {
     this.closeSubcategoryForm();
     this.loadCategories();
-  }
-
-  deleteSubcategory(id: string): void {
-    if (confirm('Are you sure you want to delete this subcategory?')) {
-      this.loading = true;
-      this._subcategoryService.deleteSubcategory(id).subscribe({
-        next: () => {
-          this._notifecationsService.showSuccess('Success', 'Subcategory deleted successfully');
-          this.loadCategories();
-        },
-        error: (err) => {
-          this._notifecationsService.showError('Error', err.error?.message || 'Failed to delete subcategory');
-          this.loading = false;
-        }
-      });
-    }
   }
 }

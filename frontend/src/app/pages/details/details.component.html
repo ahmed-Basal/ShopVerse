@@ -165,30 +165,36 @@
 
           <!-- Price Display -->
           <div class="p-5 rounded-2xl bg-ocean-900/80 border border-ocean-700/70 backdrop-blur-md space-y-2">
-            <div class="flex items-baseline gap-3">
+            <div class="flex items-baseline flex-wrap gap-3">
               @if (appliedCoupon) {
                 <span class="text-3xl sm:text-4xl font-black text-cyan-400">
-                  ${{ appliedCoupon.discountedPrice | number:'1.2-2' }}
+                  ${{ (appliedCoupon.discountedPrice * quantity) | number:'1.2-2' }}
                 </span>
                 <span class="text-lg sm:text-xl font-bold text-slate-500 line-through">
-                  ${{ productDetails.price | number:'1.2-2' }}
+                  ${{ (productDetails.price * quantity) | number:'1.2-2' }}
                 </span>
                 <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Coupon applied (-{{ appliedCoupon.discount }}%)
                 </span>
               } @else if (productDetails.priceAfterDiscount && productDetails.priceAfterDiscount < productDetails.price) {
                 <span class="text-3xl sm:text-4xl font-black text-cyan-400">
-                  ${{ productDetails.priceAfterDiscount | number:'1.2-2' }}
+                  ${{ (productDetails.priceAfterDiscount * quantity) | number:'1.2-2' }}
                 </span>
                 <span class="text-lg sm:text-xl font-bold text-slate-500 line-through">
-                  ${{ productDetails.price | number:'1.2-2' }}
+                  ${{ (productDetails.price * quantity) | number:'1.2-2' }}
                 </span>
                 <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                  Save ${{ (productDetails.price - productDetails.priceAfterDiscount) | number:'1.2-2' }}
+                  Save ${{ ((productDetails.price - productDetails.priceAfterDiscount) * quantity) | number:'1.2-2' }}
                 </span>
               } @else {
                 <span class="text-3xl sm:text-4xl font-black text-cyan-400">
-                  ${{ productDetails.price | number:'1.2-2' }}
+                  ${{ (productDetails.price * quantity) | number:'1.2-2' }}
+                </span>
+              }
+
+              @if (quantity > 1) {
+                <span class="text-xs sm:text-sm text-ocean-300 font-medium bg-ocean-800/90 px-2.5 py-1 rounded-lg border border-ocean-700">
+                  (${{ unitPrice | number:'1.2-2' }} each × {{ quantity }})
                 </span>
               }
             </div>
@@ -253,7 +259,7 @@
                   class="flex-1 h-12 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
                 >
                   <i class="pi pi-shopping-cart text-lg transition-transform group-hover:scale-110"></i>
-                  <span>ADD TO CART</span>
+                  <span>ADD TO CART • ${{ totalPrice | number:'1.2-2' }}</span>
                 </button>
               } @else {
                 <a

@@ -1,58 +1,409 @@
-<div class="categories-management container py-5">
-  <!-- Header section -->
-  <div class="header-section flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-      <h1 class="page-title text-3xl font-bold m-0">Categories & Subcategories</h1>
-      <p class="text-color-secondary mt-1">Manage categories and their subcategories.</p>
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-cyan/15 text-cyan flex items-center justify-center shadow-sm">
+          <i class="pi pi-th-large text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-white tracking-tight">Categories & Taxonomy</h1>
+          <p class="text-xs text-ocean-300 mt-0.5">Organize taxonomy, manage cover banners, and link product classifications.</p>
+        </div>
+      </div>
     </div>
+
     @if (isAdmin) {
-      <div class="flex gap-2">
-        <button class="btn-secondary flex align-items-center gap-2" (click)="openAddForm()">
-          <i class="pi pi-plus"></i> Add Category
+      <div class="flex items-center gap-2.5 self-start sm:self-auto">
+        <button
+          (click)="openAddSubcategory()"
+          class="px-3.5 py-2.5 rounded-xl bg-ocean-800 hover:bg-ocean-700 text-ocean-200 hover:text-white text-xs font-semibold border border-ocean-600/80 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+        >
+          <i class="pi pi-plus text-xs text-cyan"></i>
+          <span>Add Subcategory</span>
         </button>
-        <button class="btn-primary flex align-items-center gap-2" (click)="openAddSubcategory()">
-          <i class="pi pi-plus"></i> Add Subcategory
+
+        <button
+          (click)="openAddForm()"
+          class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue to-cyan hover:opacity-95 text-white text-xs font-bold shadow-blue transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <i class="pi pi-plus text-xs"></i>
+          <span>Add Category</span>
         </button>
       </div>
     }
   </div>
 
-  <!-- Add/Edit Category Modal -->
+  <!-- Search, Stats & View Mode Toolbar -->
+  <div class="p-4 rounded-2xl bg-ocean-900/90 border border-ocean-700/80 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Search Bar -->
+    <div class="relative flex-1 max-w-md">
+      <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-ocean-400 text-xs"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Filter categories by name or slug..."
+        class="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-ocean-800 border border-ocean-700 text-ocean-100 placeholder-ocean-400 focus:outline-none focus:border-cyan transition-all"
+      />
+      @if (searchQuery) {
+        <button
+          (click)="searchQuery = ''"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-ocean-400 hover:text-white text-xs p-1"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
+
+    <!-- Quick Stats & View Switcher -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 text-xs text-ocean-300">
+        <span class="px-2.5 py-1 rounded-lg bg-ocean-800 border border-ocean-700 text-ocean-200">
+          Categories: <strong class="text-white">{{ filteredCategories.length }}</strong>
+        </span>
+        <span class="px-2.5 py-1 rounded-lg bg-ocean-800 border border-ocean-700 text-ocean-200">
+          Subcategories: <strong class="text-white">{{ subcategories.length }}</strong>
+        </span>
+      </div>
+
+      <!-- View Switcher -->
+      <div class="flex items-center bg-ocean-800 p-1 rounded-xl border border-ocean-700">
+        <button
+          (click)="viewMode = 'grid'"
+          [class.bg-blue]="viewMode === 'grid'"
+          [class.text-white]="viewMode === 'grid'"
+          [class.text-ocean-400]="viewMode !== 'grid'"
+          class="p-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+          title="Grid View"
+        >
+          <i class="pi pi-th-large"></i>
+        </button>
+        <button
+          (click)="viewMode = 'table'"
+          [class.bg-blue]="viewMode === 'table'"
+          [class.text-white]="viewMode === 'table'"
+          [class.text-ocean-400]="viewMode !== 'table'"
+          class="p-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+          title="Table View"
+        >
+          <i class="pi pi-list"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading && categories.length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3">
+      <i class="pi pi-spin pi-spinner text-3xl text-cyan"></i>
+      <p class="text-xs text-ocean-300">Loading categories and taxonomy...</p>
+    </div>
+  } @else if (filteredCategories.length === 0) {
+    <!-- Empty State -->
+    <div class="py-16 text-center rounded-2xl bg-ocean-900 border border-ocean-700/60 p-8 space-y-3">
+      <div class="w-12 h-12 rounded-full bg-ocean-800 text-ocean-400 flex items-center justify-center mx-auto text-xl">
+        <i class="pi pi-search"></i>
+      </div>
+      <h3 class="text-base font-bold text-white">No categories found</h3>
+      <p class="text-xs text-ocean-300 max-w-sm mx-auto">
+        @if (searchQuery) {
+          No category matches "{{ searchQuery }}". Try clearing your search filter.
+        } @else {
+          Your category catalog is empty. Start by adding your first category.
+        }
+      </p>
+      @if (searchQuery) {
+        <button
+          (click)="searchQuery = ''"
+          class="px-4 py-2 rounded-xl bg-ocean-800 hover:bg-ocean-700 text-ocean-200 text-xs font-semibold border border-ocean-700 transition-all cursor-pointer"
+        >
+          Clear Filter
+        </button>
+      } @else if (isAdmin) {
+        <button
+          (click)="openAddForm()"
+          class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue to-cyan text-white text-xs font-bold shadow-blue transition-all cursor-pointer"
+        >
+          <i class="pi pi-plus text-xs mr-1.5"></i> Add First Category
+        </button>
+      }
+    </div>
+  } @else {
+    <!-- Grid Cards View -->
+    @if (viewMode === 'grid') {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (cat of filteredCategories; track (cat.id || cat._id)) {
+          <div class="group relative rounded-2xl bg-ocean-900/90 border border-ocean-700/80 overflow-hidden shadow-card hover:border-cyan/50 hover:shadow-cyan/10 transition-all duration-300 flex flex-col">
+            <!-- Banner & Quick Actions -->
+            <div class="relative h-44 w-full bg-ocean-950 overflow-hidden">
+              @if (cat.image) {
+                <img
+                  [src]="cat.image | imageUrl"
+                  [alt]="cat.name"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              } @else {
+                <div class="w-full h-full bg-gradient-to-tr from-ocean-950 via-ocean-900 to-ocean-800 flex items-center justify-center text-ocean-500">
+                  <i class="pi pi-image text-3xl"></i>
+                </div>
+              }
+
+              <!-- Gradient overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-ocean-950 via-ocean-950/40 to-transparent"></div>
+
+              <!-- Top-right Admin Actions -->
+              @if (isAdmin) {
+                <div class="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                  <button
+                    (click)="openEditForm(cat)"
+                    class="p-2 rounded-xl bg-ocean-900/85 hover:bg-blue hover:text-white text-ocean-300 backdrop-blur-md border border-ocean-700/70 shadow-sm transition-all cursor-pointer"
+                    title="Edit Category"
+                  >
+                    <i class="pi pi-pencil text-xs"></i>
+                  </button>
+                  <button
+                    (click)="confirmDeleteCategory(cat)"
+                    class="p-2 rounded-xl bg-ocean-900/85 hover:bg-red-500 hover:text-white text-ocean-300 backdrop-blur-md border border-ocean-700/70 shadow-sm transition-all cursor-pointer"
+                    title="Delete Category"
+                  >
+                    <i class="pi pi-trash text-xs"></i>
+                  </button>
+                </div>
+              }
+
+              <!-- Bottom Banner Title & Badge -->
+              <div class="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="text-base font-bold text-white tracking-tight truncate drop-shadow-sm">
+                    {{ cat.name }}
+                  </h3>
+                  <span class="text-[11px] font-mono text-cyan/90 block truncate">
+                    /{{ cat.slug }}
+                  </span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full bg-ocean-900/90 border border-ocean-600/70 text-ocean-200 text-[11px] font-semibold flex-shrink-0 backdrop-blur-md">
+                  {{ getSubcategories(cat).length }} sub
+                </span>
+              </div>
+            </div>
+
+            <!-- Card Body: Subcategories -->
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <!-- Subcategories Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-ocean-800">
+                  <span class="text-[11px] font-bold text-ocean-300 uppercase tracking-wider">
+                    Subcategories ({{ getSubcategories(cat).length }})
+                  </span>
+                  @if (isAdmin) {
+                    <button
+                      (click)="openAddSubcategoryForCategory(cat)"
+                      class="text-xs font-semibold text-cyan hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <i class="pi pi-plus text-[10px]"></i>
+                      <span>Add Sub</span>
+                    </button>
+                  }
+                </div>
+
+                <!-- Subcategories List -->
+                <div class="mt-2.5 space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                  @for (sub of getSubcategories(cat); track (sub.id || sub._id)) {
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-ocean-800/60 border border-ocean-700/50 hover:bg-ocean-800 hover:border-ocean-600 transition-all group/sub">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-7 h-7 rounded-lg bg-ocean-900 border border-ocean-700/80 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          @if (sub.image) {
+                            <img [src]="sub.image | imageUrl" [alt]="sub.name" class="w-full h-full object-cover" />
+                          } @else {
+                            <i class="pi pi-folder text-[11px] text-ocean-400"></i>
+                          }
+                        </div>
+                        <span class="text-xs font-semibold text-ocean-100 truncate">
+                          {{ sub.name }}
+                        </span>
+                      </div>
+
+                      @if (isAdmin) {
+                        <div class="flex items-center gap-1 opacity-80 group-hover/sub:opacity-100 transition-opacity">
+                          <button
+                            (click)="openEditSubcategory(sub)"
+                            class="p-1 rounded-md text-ocean-400 hover:text-cyan hover:bg-ocean-700 transition-colors cursor-pointer"
+                            title="Edit Subcategory"
+                          >
+                            <i class="pi pi-pencil text-[11px]"></i>
+                          </button>
+                          <button
+                            (click)="confirmDeleteSubcategory(sub)"
+                            class="p-1 rounded-md text-ocean-400 hover:text-red-400 hover:bg-ocean-700 transition-colors cursor-pointer"
+                            title="Delete Subcategory"
+                          >
+                            <i class="pi pi-trash text-[11px]"></i>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  } @empty {
+                    <div class="text-center py-4 px-3 rounded-xl border border-dashed border-ocean-700/60 bg-ocean-950/30">
+                      <p class="text-xs text-ocean-400 italic">No subcategories linked</p>
+                      @if (isAdmin) {
+                        <button
+                          (click)="openAddSubcategoryForCategory(cat)"
+                          class="mt-1.5 text-xs text-cyan hover:underline font-semibold cursor-pointer"
+                        >
+                          + Create first subcategory
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Table View -->
+      <div class="rounded-2xl bg-ocean-900 border border-ocean-700/80 overflow-hidden shadow-card">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-ocean-950/80 text-ocean-300 uppercase tracking-wider border-b border-ocean-800">
+              <tr>
+                <th class="px-5 py-3.5 font-semibold">Category</th>
+                <th class="px-5 py-3.5 font-semibold">Slug</th>
+                <th class="px-5 py-3.5 font-semibold">Subcategories</th>
+                <th class="px-5 py-3.5 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-ocean-800 text-ocean-100">
+              @for (cat of filteredCategories; track (cat.id || cat._id)) {
+                <tr class="hover:bg-ocean-800/40 transition-colors">
+                  <td class="px-5 py-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-ocean-800 border border-ocean-700 overflow-hidden flex-shrink-0">
+                        @if (cat.image) {
+                          <img [src]="cat.image | imageUrl" [alt]="cat.name" class="w-full h-full object-cover" />
+                        } @else {
+                          <div class="w-full h-full flex items-center justify-center text-ocean-500">
+                            <i class="pi pi-image text-xs"></i>
+                          </div>
+                        }
+                      </div>
+                      <span class="font-bold text-white text-sm">{{ cat.name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-3 font-mono text-cyan text-xs">
+                    /{{ cat.slug }}
+                  </td>
+                  <td class="px-5 py-3">
+                    <span class="px-2.5 py-1 rounded-full bg-cyan/15 text-cyan border border-cyan/30 text-[11px] font-semibold">
+                      {{ getSubcategories(cat).length }} Subcategories
+                    </span>
+                  </td>
+                  <td class="px-5 py-3 text-right">
+                    @if (isAdmin) {
+                      <div class="flex items-center justify-end gap-2">
+                        <button
+                          (click)="openAddSubcategoryForCategory(cat)"
+                          class="p-1.5 rounded-lg text-ocean-300 hover:text-white hover:bg-ocean-800 transition-colors cursor-pointer"
+                          title="Add Subcategory"
+                        >
+                          <i class="pi pi-plus text-xs"></i>
+                        </button>
+                        <button
+                          (click)="openEditForm(cat)"
+                          class="p-1.5 rounded-lg text-ocean-300 hover:text-white hover:bg-ocean-800 transition-colors cursor-pointer"
+                          title="Edit Category"
+                        >
+                          <i class="pi pi-pencil text-xs"></i>
+                        </button>
+                        <button
+                          (click)="confirmDeleteCategory(cat)"
+                          class="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          title="Delete Category"
+                        >
+                          <i class="pi pi-trash text-xs"></i>
+                        </button>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Add / Edit Category Modal -->
   @if (showForm && isAdmin) {
-    <div class="modal-overlay">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h2>{{ isEditMode ? 'Edit Category' : 'Add New Category' }}</h2>
-          <button class="close-btn" (click)="closeForm()">
-            <i class="pi pi-times"></i>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ocean-950/80 backdrop-blur-md">
+      <div class="w-full max-w-lg bg-ocean-900 border border-ocean-700/80 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-ocean-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-cyan/15 text-cyan flex items-center justify-center">
+              <i class="pi pi-th-large text-xs"></i>
+            </div>
+            <h2 class="text-base font-bold text-white tracking-tight">
+              {{ isEditMode ? 'Edit Category' : 'Add New Category' }}
+            </h2>
+          </div>
+          <button
+            type="button"
+            (click)="closeForm()"
+            class="p-1.5 rounded-lg text-ocean-400 hover:text-white hover:bg-ocean-800 transition-colors cursor-pointer"
+          >
+            <i class="pi pi-times text-sm"></i>
           </button>
         </div>
 
-        <form [formGroup]="categoryForm" (ngSubmit)="submit()" class="modal-form">
-          <div class="form-group">
-            <label for="name">Category Name <span class="required-star">*</span></label>
-            <input id="name" type="text" formControlName="name" placeholder="e.g. Electronics, Clothing" />
+        <!-- Form -->
+        <form [formGroup]="categoryForm" (ngSubmit)="submit()" class="p-6 space-y-4">
+          <div>
+            <label for="catName" class="block text-xs font-semibold text-ocean-200 mb-1.5">
+              Category Name <span class="text-red-400">*</span>
+            </label>
+            <input
+              id="catName"
+              type="text"
+              formControlName="name"
+              placeholder="e.g. Electronics, Fashion, Home & Living"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-ocean-800 border border-ocean-700 text-white placeholder-ocean-400 text-xs focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-all"
+            />
             @if (categoryForm.get('name')?.touched && categoryForm.get('name')?.invalid) {
-              <span class="error-text">Category name is required (min 3 chars).</span>
+              <span class="text-[11px] text-red-400 mt-1 block">Category name is required (min 3 chars).</span>
             }
           </div>
 
-          <!-- Dual-Mode Image Uploader (Upload or URL) -->
+          <!-- Dual-Mode Image Uploader -->
           <app-image-uploader
-            [label]="'Category Cover Image'"
+            [label]="'Category Cover Banner'"
             [initialUrl]="categoryImageUrl"
             [placeholder]="'https://images.unsplash.com/photo-1526738549149-8e07eca6c147'"
-            [hint]="'Upload a cover banner or paste a direct image URL link.'"
+            [hint]="'Upload a cover banner or paste an image URL link.'"
             (imageChange)="onCategoryImageChange($event)"
           ></app-image-uploader>
 
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
-            <button type="submit" class="btn-primary" [disabled]="loading">
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-ocean-800">
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="px-4 py-2 rounded-xl bg-ocean-800 hover:bg-ocean-700 text-ocean-300 hover:text-white text-xs font-semibold border border-ocean-700 transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="loading"
+              class="px-5 py-2 rounded-xl bg-gradient-to-r from-blue to-cyan hover:opacity-95 text-white text-xs font-bold shadow-blue transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
               @if (loading) {
-                <i class="pi pi-spin pi-spinner"></i> Saving...
+                <i class="pi pi-spin pi-spinner text-xs"></i>
+                <span>Saving...</span>
               } @else {
-                {{ isEditMode ? 'Save' : 'Create' }}
+                <span>{{ isEditMode ? 'Save Changes' : 'Create Category' }}</span>
               }
             </button>
           </div>
@@ -61,7 +412,7 @@
     </div>
   }
 
-  <!-- Add/Edit Subcategory Modal Form -->
+  <!-- Add / Edit Subcategory Form Modal -->
   @if (showSubcategoryForm && isAdmin) {
     <app-subcategory-form
       [subcategory]="selectedSubcategory"
@@ -72,99 +423,53 @@
     ></app-subcategory-form>
   }
 
-  <!-- Loading State -->
-  @if (loading && categories.length === 0) {
-    <div class="loading-container text-center py-6">
-      <i class="pi pi-spin pi-spinner text-4xl text-orange-500 mb-2"></i>
-      <p class="text-color-secondary">Loading categories and subcategories...</p>
-    </div>
-  } @else {
-    <!-- Redesigned Card Grid List -->
-    <div class="categories-grid grid">
-      @for (cat of categories; track cat._id) {
-        <div class="col-12 md:col-6 lg:col-4">
-          <div class="category-dashboard-card border-round-2xl overflow-hidden flex flex-column h-full">
-            <!-- Category Banner/Image -->
-            <div class="category-banner">
-              <img [src]="cat.image | imageUrl" [alt]="cat.name" class="category-banner-img" />
-              <div class="category-banner-overlay"></div>
-              
-              @if (isAdmin) {
-                <div class="category-actions flex gap-2">
-                  <button class="action-btn edit-btn" (click)="openEditForm(cat)" title="Edit Category">
-                    <i class="pi pi-pencil"></i>
-                  </button>
-                  <button class="action-btn delete-btn" (click)="deleteCategory(cat._id)" title="Delete Category">
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              }
-            </div>
-
-            <!-- Category Content -->
-            <div class="category-content-container p-4 flex-grow-1 flex flex-column">
-              <div class="flex justify-content-between align-items-start mb-1">
-                <h3 class="category-name text-xl font-bold m-0">{{ cat.name }}</h3>
-                <span class="subcategory-count-badge">
-                  {{ categorySubcategoriesMap[cat._id]?.length || 0 }} sub
-                </span>
-              </div>
-              <span class="category-slug text-xs mb-3">/categories/{{ cat.slug }}</span>
-              
-              <div class="divider mb-3 mt-1"></div>
-              
-              <div class="subcategories-header flex justify-content-between align-items-center mb-2">
-                <span class="subcategories-title text-xs font-semibold uppercase tracking-wider">Subcategories</span>
-                @if (isAdmin) {
-                  <button class="add-sub-inline-btn text-xs flex align-items-center gap-1" (click)="openAddSubcategoryForCategory(cat)">
-                    <i class="pi pi-plus text-xs"></i> Add Sub
-                  </button>
-                }
-              </div>
-
-              <!-- Scrollable subcategories list -->
-              <div class="subcategories-scroll flex-grow-1 overflow-y-auto max-h-12rem pr-1">
-                @for (sub of categorySubcategoriesMap[cat._id] || []; track sub._id) {
-                  <div class="subcategory-item flex justify-content-between align-items-center p-2 border-round-xl mb-2">
-                    <div class="flex align-items-center gap-2">
-                      <div class="sub-img-container flex align-items-center justify-content-center border-round-md">
-                        @if (sub.image) {
-                          <img [src]="sub.image | imageUrl" [alt]="sub.name" class="sub-img" />
-                        } @else {
-                          <i class="pi pi-image text-xs text-muted"></i>
-                        }
-                      </div>
-                      <span class="sub-name text-sm font-medium">{{ sub.name }}</span>
-                    </div>
-                    @if (isAdmin) {
-                      <div class="sub-actions-overlay flex gap-1">
-                        <button class="sub-action-icon-btn edit" (click)="openEditSubcategory(sub)" title="Edit Subcategory">
-                          <i class="pi pi-pencil"></i>
-                        </button>
-                        <button class="sub-action-icon-btn delete" (click)="deleteSubcategory(sub._id)" title="Delete Subcategory">
-                          <i class="pi pi-trash"></i>
-                        </button>
-                      </div>
-                    }
-                  </div>
-                } @empty {
-                  <div class="empty-sub-state text-center py-3 italic text-xs">
-                    No subcategories found.
-                  </div>
-                }
-              </div>
-            </div>
+  <!-- Delete Confirmation Modal -->
+  @if (showDeleteModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ocean-950/80 backdrop-blur-md animate-fadeIn">
+      <div class="w-full max-w-md bg-ocean-900 border border-ocean-700 rounded-2xl shadow-2xl p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-exclamation-triangle text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white tracking-tight">Confirm Deletion</h3>
+            <p class="text-xs text-ocean-300">This action cannot be undone.</p>
           </div>
         </div>
-      } @empty {
-        <div class="col-12">
-          <div class="empty-categories-state text-center py-8 border-round-2xl border-1 border-200">
-            <i class="pi pi-folder-open text-5xl text-300 mb-3"></i>
-            <h3 class="text-xl font-bold mb-2">No categories found</h3>
-            <p class="text-color-secondary">Get started by creating your first category.</p>
-          </div>
+
+        <p class="text-xs text-ocean-200 leading-relaxed">
+          Are you sure you want to delete the {{ deleteTargetType }}
+          <span class="font-bold text-white">"{{ deleteTargetName }}"</span>?
+          @if (deleteTargetType === 'category') {
+            All linked subcategories and product relationships may be affected.
+          }
+        </p>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            (click)="closeDeleteModal()"
+            [disabled]="deleteLoading"
+            class="px-4 py-2 rounded-xl bg-ocean-800 hover:bg-ocean-700 text-ocean-300 hover:text-white text-xs font-semibold border border-ocean-700 transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="executeDelete()"
+            [disabled]="deleteLoading"
+            class="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            @if (deleteLoading) {
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+              <span>Deleting...</span>
+            } @else {
+              <i class="pi pi-trash text-xs"></i>
+              <span>Delete Permanently</span>
+            }
+          </button>
         </div>
-      }
+      </div>
     </div>
   }
 </div>

@@ -38,7 +38,7 @@ export class UserNavComponent implements OnInit {
     private router: Router
   ) {}
 
-  @HostListener('document:click', ['$event'])
+  @HostListener('document:click')
   onDocumentClick(): void {
     this.showUserMenu = false;
     this.showNotificationsDropdown = false;
