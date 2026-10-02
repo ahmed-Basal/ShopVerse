@@ -1,6 +1,9 @@
 {
   "extends": ["airbnb", "prettier", "plugin:node/recommended"],
   "plugins": ["prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
   "rules": {
     "spaced-comment": "off",
     "no-console": "off",
@@ -15,6 +18,8 @@
     "no-undef": "error",
     "node/no-unsupported-features/es-syntax": "off",
     "prefer-destructuring": ["warn", { "object": true, "array": false }],
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }]
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }],
+    "radix": "off",
+    "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }]
   }
 }

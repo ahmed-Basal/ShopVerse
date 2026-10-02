@@ -11,11 +11,12 @@ import { ReviewModel } from '../../core/models/reviews/review.model';
 import { NotifecationsService } from '../../core/service/notifecations.service';
 import { WishlistService } from '../../core/service/wishlist.service';
 import { ProductsService } from '../../core/service/products.service';
+import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-details',
   standalone: true,
-  imports: [ButtonModule, RouterLink, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ButtonModule, RouterLink, CommonModule, FormsModule, ReactiveFormsModule, ImageUrlPipe],
   templateUrl: './details.component.html',
   styleUrl: './details.component.scss',
 })
@@ -25,6 +26,12 @@ export class DetailsComponent implements OnInit {
   isAddedToCart: boolean = false;
   isLoggedIn: boolean = false;
   isInWishlist: boolean = false;
+
+  // Selected state
+  selectedImage: string = '';
+  selectedColor: string = '';
+  quantity: number = 1;
+  activeTab: 'desc' | 'specs' | 'shipping' = 'desc';
 
   // Reviews list and pagination
   reviewsList: ReviewModel[] = [];
@@ -58,6 +65,8 @@ export class DetailsComponent implements OnInit {
       this.id = next.params['id'];
       this.reviewsPage = 1;
       this.reviewsList = [];
+      this.quantity = 1;
+      this.appliedCoupon = null;
       this.displayDetails();
       this.loadProductReviews();
       this.checkWishlistState();
@@ -120,12 +129,68 @@ export class DetailsComponent implements OnInit {
     });
   }
 
+  selectImage(img: string): void {
+    this.selectedImage = img;
+  }
+
+  selectColor(color: string): void {
+    this.selectedColor = color;
+  }
+
+  incrementQty(): void {
+    const max = this.productDetails?.quantity || 99;
+    if (this.quantity < max) {
+      this.quantity++;
+    }
+  }
+
+  decrementQty(): void {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
+  }
+
+  setActiveTab(tab: 'desc' | 'specs' | 'shipping'): void {
+    this.activeTab = tab;
+  }
+
   displayDetails(): void {
     this._activateRoute.data.subscribe((data: any) => {
-      this.productDetails = {
-        ...data.details.product,
-        isAddedToCart: this._cartService.isAddedToCart(data.details.product),
-      };
+      const prod =
+        data.details?.data?.product ||
+        data.details?.product ||
+        data.details?.data ||
+        data.details;
+
+      if (prod && (prod.title || prod.id)) {
+        this.productDetails = {
+          ...prod,
+          isAddedToCart: this._cartService.isAddedToCart(prod),
+        };
+        this.selectedImage = this.productDetails.imageCover || this.productDetails.image || '';
+        this.selectedColor =
+          (this.productDetails.colors && this.productDetails.colors[0]) ||
+          this.productDetails.color ||
+          'Default';
+      } else if (this.id) {
+        this._productsService.getDetails(this.id).subscribe({
+          next: (res: any) => {
+            const fetched = res.data?.product || res.data || res.product || res;
+            if (fetched) {
+              this.productDetails = {
+                ...fetched,
+                isAddedToCart: this._cartService.isAddedToCart(fetched),
+              };
+              this.selectedImage = this.productDetails.imageCover || this.productDetails.image || '';
+              this.selectedColor =
+                (this.productDetails.colors && this.productDetails.colors[0]) ||
+                this.productDetails.color ||
+                'Default';
+            }
+          },
+          error: (err) => console.error('Failed to load product details fallback:', err),
+        });
+      }
     });
   }
 
@@ -185,8 +250,10 @@ export class DetailsComponent implements OnInit {
     });
   }
 
-  addToCart(product: ProductModel) {
-    this._cartService.addToCart(product);
+  addToCart(product: ProductModel): void {
+    this._cartService.addToCart(product, this.selectedColor || 'Default');
+    this.isAddedToCart = true;
+    product.isAddedToCart = true;
   }
 
   applyCoupon(): void {

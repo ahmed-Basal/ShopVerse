@@ -1,71 +1,83 @@
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
-const User = require("../models/userModel");
+const prisma = require("../config/prismaClient");
 
 exports.addAddress = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $addToSet: { addresses: req.body },
+  await prisma.address.create({
+    data: {
+      userId: req.user.id,
+      alias: req.body.alias,
+      details: req.body.details,
+      phone: req.body.phone,
+      city: req.body.city,
+      postalCode: req.body.postalCode,
     },
-    { new: true },
-  );
+  });
+
+  const addresses = await prisma.address.findMany({ where: { userId: req.user.id } });
 
   res.status(200).json({
     status: "success",
     message: "Address added successfully.",
-    data: user.addresses,
+    data: addresses,
   });
 });
 
 exports.removeAddress = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $pull: { addresses: { _id: req.params.addressId } },
-    },
-    { new: true },
-  );
+  const found = await prisma.address.findFirst({
+    where: { id: req.params.addressId, userId: req.user.id },
+  });
+
+  if (!found) {
+    return next(new ApiError(`No address found with id ${req.params.addressId}`, 404));
+  }
+
+  await prisma.address.delete({ where: { id: req.params.addressId } });
+
+  const addresses = await prisma.address.findMany({ where: { userId: req.user.id } });
 
   res.status(200).json({
     status: "success",
     message: "Address removed successfully.",
-    data: user.addresses,
+    data: addresses,
   });
 });
 
 exports.getLoggedUserAddresses = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user._id).populate("addresses");
+  const addresses = await prisma.address.findMany({ where: { userId: req.user.id } });
 
   res.status(200).json({
     status: "success",
-    results: user.addresses.length,
-    data: user.addresses,
+    results: addresses.length,
+    data: addresses,
   });
 });
 
 exports.updateAddress = asyncHandler(async (req, res, next) => {
-  const user = await User.findOneAndUpdate(
-    { _id: req.user._id, "addresses._id": req.params.addressId },
-    {
-      $set: {
-        "addresses.$.alias": req.body.alias,
-        "addresses.$.details": req.body.details,
-        "addresses.$.phone": req.body.phone,
-        "addresses.$.city": req.body.city,
-        "addresses.$.postalCode": req.body.postalCode,
-      }
-    },
-    { new: true }
-  );
+  const found = await prisma.address.findFirst({
+    where: { id: req.params.addressId, userId: req.user.id },
+  });
 
-  if (!user) {
+  if (!found) {
     return next(new ApiError(`No address found with id ${req.params.addressId}`, 404));
   }
+
+  await prisma.address.update({
+    where: { id: req.params.addressId },
+    data: {
+      alias: req.body.alias,
+      details: req.body.details,
+      phone: req.body.phone,
+      city: req.body.city,
+      postalCode: req.body.postalCode,
+    },
+  });
+
+  const addresses = await prisma.address.findMany({ where: { userId: req.user.id } });
 
   res.status(200).json({
     status: "success",
     message: "Address updated successfully.",
-    data: user.addresses,
+    data: addresses,
   });
 });

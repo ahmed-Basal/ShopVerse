@@ -6,11 +6,12 @@ import { CategoryService } from '../../core/service/category.service';
 import { NotifecationsService } from '../../core/service/notifecations.service';
 import { CategoryModel } from '../../core/models/category/category.model';
 import { SubcategoryModel } from '../../core/models/subcategory/subcategory.model';
+import { ImageUploaderComponent, ImageUploadEvent } from '../image-uploader/image-uploader.component';
 
 @Component({
   selector: 'app-subcategory-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImageUploaderComponent],
   templateUrl: './subcategory-form.component.html',
   styleUrl: './subcategory-form.component.scss'
 })
@@ -25,6 +26,7 @@ export class SubcategoryFormComponent implements OnInit {
   form!: FormGroup;
   loading = false;
   selectedFile: File | null = null;
+  imageUrl: string = '';
   imagePreview: string | null = null;
 
   constructor(
@@ -73,15 +75,13 @@ export class SubcategoryFormComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedFile);
+  onImageChange(event: ImageUploadEvent): void {
+    if (event.mode === 'file') {
+      this.selectedFile = event.file;
+      this.imageUrl = '';
+    } else {
+      this.imageUrl = event.url;
+      this.selectedFile = null;
     }
   }
 
@@ -98,6 +98,8 @@ export class SubcategoryFormComponent implements OnInit {
     if (this.isCategory) {
       if (this.selectedFile) {
         formData.append('image', this.selectedFile);
+      } else if (this.imageUrl) {
+        formData.append('image', this.imageUrl);
       }
 
       const request$ = this.category
@@ -126,6 +128,8 @@ export class SubcategoryFormComponent implements OnInit {
       formData.append('description', this.form.get('description')?.value || '');
       if (this.selectedFile) {
         formData.append('image', this.selectedFile);
+      } else if (this.imageUrl) {
+        formData.append('image', this.imageUrl);
       }
 
       const request$ = this.subcategory

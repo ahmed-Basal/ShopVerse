@@ -1,278 +1,643 @@
-<section>
-  <div class="container">
-    <div class="grid align-items-center pb-5">
-      <div class="md:col-6">
-        <figure>
-          <img
-            class="w-full"
-            [src]="productDetails.image"
-            [alt]="productDetails.title"
-          />
-        </figure>
-      </div>
-      <div class="md:col-6">
-        <p class="font-medium mt-1 mb-3 text-color-secondary">
-          {{ productDetails.title }}
-        </p>
-
-        <p class="font-medium text-sm my-1">
-          {{ productDetails.description }}
-        </p>
-        <div class="flex align-items-center gap-2 mb-4">
-          <div class="price flex gap-2 align-items-center">
-            @if (appliedCoupon) {
-              <span class="text-color-secondary font-bold">
-                <del>${{ productDetails.price }}</del>
-              </span>
-              <span class="new-price font-bold text-green-500">
-                ${{ appliedCoupon.discountedPrice }}
-              </span>
-            } @else {
-              <span class="text-color-secondary font-bold">
-                <del>14</del>
-              </span>
-              <span class="new-price font-bold">
-                <span class="text-green-400">$</span> {{ productDetails.price }}
-              </span>
-            }
-          </div>
-          <div class="offer">
-            @if (appliedCoupon) {
-              <span class="bg-red-500 p-1 border-circle text-white text-xs"
-                >%{{ appliedCoupon.discount }}</span
-              >
-              <span class="font-bold text-xs font-bold px-1 text-red-500">coupon off</span>
-            } @else {
-              <span class="bg-red-500 p-1 border-circle text-white text-xs"
-                >%{{ productDetails.discount }}</span
-              >
-              <span class="fonot-bold text-xs font-bold px-1">off</span>
-            }
-          </div>
-        </div>
-        <div>
-          <div
-            class="flex align-items-center justify-content-between capitalize"
-          >
-            <p class="text-color-secondary my-1">brand:</p>
-            <p class="font-bold text-orange-500 my-1">
-              {{ productDetails.brand }}
-            </p>
-          </div>
-          <div
-            class="flex align-items-center justify-content-between capitalize"
-          >
-            <p class="text-color-secondary my-1">model:</p>
-            <p class="font-bold text-orange-500 my-1">
-              {{ productDetails.model }}
-            </p>
-          </div>
-          <div
-            class="flex align-items-center justify-content-between capitalize"
-          >
-            <p class="text-color-secondary my-1">color:</p>
-            <p class="font-bold text-orange-500 my-1">
-              {{ productDetails.color }}
-            </p>
-          </div>
-          <div
-            class="flex align-items-center justify-content-between capitalize"
-          >
-            <p class="text-color-secondary my-1">category:</p>
-            <p class="font-bold text-orange-500 my-1">
-              {{ productDetails.category }}
-            </p>
-          </div>
-          <div
-            class="flex align-items-center justify-content-between capitalize"
-          >
-            <p class="text-color-secondary my-1">discount:</p>
-            <p class="font-bold text-orange-500 my-1">
-              {{ productDetails.discount }}
-            </p>
-          </div>
-        </div>
-        <div class="flex gap-2 align-items-center w-full my-2">
-          @if (!productDetails.isAddedToCart) {
-          <div class="flex-1">
-            <p-button
-              (click)="
-                addToCart(productDetails); productDetails.isAddedToCart = true
-              "
-              label="add to cart"
-              severity="warning"
-              styleClass="uppercase w-full"
-              icon="pi pi-cart-plus text-2xl"
-              iconPos="right"
-            />
-          </div>
-          } @if (productDetails.isAddedToCart) {
-          <div class="flex-1">
-            <p-button
-              [routerLink]="['/cart']"
-              label="go to cart"
-              severity="contrast"
-              styleClass="uppercase w-full"
-              icon="pi pi-shopping-cart text-2xl"
-              iconPos="right"
-            />
-          </div>
-          }
-          <button type="button" 
-                  class="w-3rem h-3rem border-round-xl border-1 border-200 shadow-1 bg-white flex align-items-center justify-content-center cursor-pointer hover:bg-50 flex-shrink-0"
-                  style="transition: all 0.2s; height: 46px;"
-                  (click)="toggleWishlist($event)"
-                  [title]="isInWishlist ? 'Remove from Favorites' : 'Add to Favorites'">
-            <i class="pi text-2xl" 
-               [class.pi-heart-fill]="isInWishlist" 
-               [class.pi-heart]="!isInWishlist"
-               [class.text-red-500]="isInWishlist"
-               [class.text-500]="!isInWishlist"></i>
-          </button>
-        </div>
+<div class="min-h-screen bg-ocean-950 text-slate-100 py-6 sm:py-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    @if (productDetails) {
+      <!-- Breadcrumb Navigation -->
+      <nav aria-label="Breadcrumb" class="mb-6 flex items-center flex-wrap gap-2 text-xs sm:text-sm text-slate-400">
+        <a routerLink="/" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <i class="pi pi-home text-xs"></i>
+          <span>Home</span>
+        </a>
+        <i class="pi pi-chevron-right text-[10px] text-slate-600"></i>
+        <a routerLink="/categories" class="hover:text-cyan-400 transition-colors">Categories</a>
         
-        <!-- Coupon Form Section -->
-        <div class="coupon-section mt-4 pt-3 border-top-1 border-200">
-          <h4 class="text-sm font-bold text-900 mb-2"><i class="pi pi-ticket text-primary mr-1"></i> Apply Coupon</h4>
-          <div class="flex gap-2">
-            <input
-              type="text"
-              class="p-2 border-1 border-200 border-round-lg flex-1 text-sm"
-              placeholder="Enter coupon code"
-              [(ngModel)]="couponCode"
-              [disabled]="couponLoading"
-              (keydown.enter)="applyCoupon()"
-            />
-            <button
-              type="button"
-              class="btn-primary py-2 px-4 text-xs font-bold flex align-items-center justify-content-center"
-              style="height: 38px; min-width: 90px;"
-              [disabled]="couponLoading || !couponCode.trim()"
-              (click)="applyCoupon()"
-            >
-              @if (couponLoading) {
-                <i class="pi pi-spin pi-spinner mr-1"></i> Applying...
-              } @else {
-                Apply
+        @if (productDetails.categoryName || productDetails.category) {
+          <i class="pi pi-chevron-right text-[10px] text-slate-600"></i>
+          <a [routerLink]="['/categories', productDetails.categoryId || productDetails.category]" 
+             class="hover:text-cyan-400 transition-colors capitalize text-slate-300">
+            {{ productDetails.categoryName || productDetails.category }}
+          </a>
+        }
+
+        @if (productDetails.subCategory) {
+          <i class="pi pi-chevron-right text-[10px] text-slate-600"></i>
+          <span class="text-cyan-400 font-medium capitalize">
+            {{ productDetails.subCategory }}
+          </span>
+        }
+
+        <i class="pi pi-chevron-right text-[10px] text-slate-600"></i>
+        <span class="text-slate-500 truncate max-w-[200px] sm:max-w-xs">{{ productDetails.title }}</span>
+      </nav>
+
+      <!-- Main Product Grid: 2 Columns on Desktop, 1 Column on Mobile/Tablet -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        
+        <!-- Left Column: Gallery (lg:col-span-6) -->
+        <div class="lg:col-span-6 space-y-4">
+          <!-- Main Display Card -->
+          <div class="relative bg-ocean-900/60 border border-ocean-700/60 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden group">
+            <!-- Background Glow FX -->
+            <div class="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/20 transition-all duration-700"></div>
+            <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-ocean-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Badges Floating Over Image -->
+            <div class="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+              @if (productDetails.discount) {
+                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-rose-500/90 text-white shadow-lg shadow-rose-500/30 flex items-center gap-1">
+                  <i class="pi pi-bolt text-[10px]"></i>
+                  <span>-{{ productDetails.discount }}% OFF</span>
+                </span>
               }
-            </button>
+              @if (productDetails.popular) {
+                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-amber-500/90 text-slate-950 shadow-lg shadow-amber-500/30 flex items-center gap-1">
+                  <i class="pi pi-star-fill text-[10px]"></i>
+                  <span>Hot Item</span>
+                </span>
+              }
+            </div>
+
+            <!-- Stock Status Pill -->
+            <div class="absolute top-4 right-4 z-10">
+              @if ((productDetails.quantity || 0) > 0) {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>In Stock ({{ productDetails.quantity }})</span>
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                  <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                  <span>Out of Stock</span>
+                </span>
+              }
+            </div>
+
+            <!-- Image Stage -->
+            <div class="w-full h-80 sm:h-96 md:h-[420px] flex items-center justify-center p-4">
+              <img
+                #mainImg
+                class="w-full h-full object-contain filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 group-hover:scale-105"
+                [src]="(selectedImage || productDetails.imageCover || productDetails.image) | imageUrl"
+                (error)="mainImg.src = '/assets/product-1.jpg'"
+                [alt]="productDetails.title"
+              />
+            </div>
           </div>
-          @if (couponError) {
-            <p class="text-xs text-red-500 mt-2 mb-0 flex align-items-center gap-1">
-              <i class="pi pi-exclamation-circle"></i>
-              <span>{{ couponError }}</span>
-            </p>
-          }
-          @if (appliedCoupon) {
-            <p class="text-xs text-green-500 mt-2 mb-0 flex align-items-center gap-1">
-              <i class="pi pi-check-circle"></i>
-              <span>Coupon applied! Saved ${{ (productDetails.price - appliedCoupon.discountedPrice) | number:'1.2-2' }} ({{ appliedCoupon.discount }}% off)</span>
-            </p>
+
+          <!-- Thumbnail Gallery (if multiple images available) -->
+          @if (productDetails.images && productDetails.images.length > 1) {
+            <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-ocean-700">
+              @for (img of productDetails.images; track img) {
+                <button
+                  type="button"
+                  (click)="selectImage(img)"
+                  class="relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-ocean-900/80 border p-2 overflow-hidden transition-all duration-300"
+                  [ngClass]="selectedImage === img ? 'border-cyan-400 ring-2 ring-cyan-500 shadow-lg shadow-cyan-500/30' : 'border-ocean-700/60 opacity-60 hover:opacity-100'"
+                >
+                  <img
+                    #thumbImg
+                    [src]="img | imageUrl"
+                    (error)="thumbImg.src = '/assets/product-1.jpg'"
+                    [alt]="productDetails.title"
+                    class="w-full h-full object-contain"
+                  />
+                </button>
+              }
+            </div>
           }
         </div>
-      </div>
-    </div>
 
-    <!-- Reviews Section -->
-    <div class="grid pt-6 mt-5 border-top-1 border-200">
-      <!-- Add Review Form -->
-      <div class="col-12 md:col-5">
-        <div class="p-4 border-round-xl border-1 border-200 bg-50">
-          <h3 class="text-xl font-bold text-900 mt-0 mb-3"><i class="pi pi-comment text-primary mr-1"></i> Write a Review</h3>
+        <!-- Right Column: Product Info & Actions (lg:col-span-6) -->
+        <div class="lg:col-span-6 space-y-6">
           
-          @if (isLoggedIn) {
-            <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="flex flex-column gap-3">
-              <div class="flex flex-column gap-1">
-                <label class="font-semibold text-xs text-700">Rating Stars</label>
-                <div class="flex gap-2 align-items-center">
-                  @for (star of [1,2,3,4,5]; track star) {
-                    <i class="pi cursor-pointer text-xl" 
-                       [class.pi-star-fill]="star <= reviewForm.get('ratings')?.value"
-                       [class.pi-star]="star > reviewForm.get('ratings')?.value"
-                       [class.text-yellow-500]="star <= reviewForm.get('ratings')?.value"
-                       [class.text-400]="star > reviewForm.get('ratings')?.value"
-                       (click)="reviewForm.get('ratings')?.setValue(star)"></i>
-                  }
-                </div>
-              </div>
+          <!-- Category & Hierarchy Badges -->
+          <div class="flex flex-wrap items-center gap-2">
+            @if (productDetails.brand) {
+              <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-lg bg-ocean-800/80 border border-ocean-700 text-slate-300">
+                <i class="pi pi-tag text-[10px] text-cyan-400"></i>
+                <span>Brand:</span>
+                <strong class="text-white font-semibold">{{ productDetails.brand }}</strong>
+              </span>
+            }
 
-              <div class="flex flex-column gap-1">
-                <label class="font-semibold text-xs text-700">Review Message</label>
-                <textarea formControlName="title" class="p-2 border-1 border-200 border-round-lg w-full" placeholder="Share your experience with this product..." rows="4"></textarea>
-                @if (reviewForm.get('title')?.touched && reviewForm.get('title')?.invalid) {
-                  <span class="text-xs text-red-500">Please enter a review of at least 3 characters.</span>
+            @if (productDetails.categoryName || productDetails.category) {
+              <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-lg bg-ocean-800/80 border border-ocean-700 text-slate-300 capitalize">
+                <i class="pi pi-folder text-[10px] text-cyan-400"></i>
+                <span>Category:</span>
+                <strong class="text-white font-semibold">{{ productDetails.categoryName || productDetails.category }}</strong>
+              </span>
+            }
+
+            @if (productDetails.subCategory) {
+              <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-lg bg-cyan-950/70 border border-cyan-500/40 text-cyan-300">
+                <i class="pi pi-sitemap text-[10px] text-cyan-400"></i>
+                <span>Subcategory:</span>
+                <strong class="text-cyan-200 font-semibold">{{ productDetails.subCategory }}</strong>
+              </span>
+            }
+          </div>
+
+          <!-- Product Title -->
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-snug">
+            {{ productDetails.title }}
+          </h1>
+
+          <!-- Ratings & Social Proof -->
+          <div class="flex flex-wrap items-center gap-4 text-sm">
+            <div class="flex items-center gap-1.5 bg-ocean-900/90 border border-ocean-700/80 px-3 py-1.5 rounded-xl">
+              <div class="flex text-amber-400 text-xs">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <i class="pi" 
+                     [class.pi-star-fill]="star <= (productDetails.ratingsAverage || 5)"
+                     [class.pi-star]="star > (productDetails.ratingsAverage || 5)"></i>
                 }
               </div>
+              <span class="font-bold text-white ml-1">{{ productDetails.ratingsAverage || '4.8' }}</span>
+              <span class="text-slate-400 text-xs">({{ productDetails.ratingsQuantity || reviewsList.length || 0 }} reviews)</span>
+            </div>
 
-              <button type="submit" class="btn-primary w-full py-2.5 font-bold" [disabled]="submittingReview">
-                @if (submittingReview) {
-                  <i class="pi pi-spin pi-spinner mr-1"></i> Posting...
+            @if ((productDetails.sold || 0) > 0) {
+              <span class="text-xs text-slate-400 flex items-center gap-1">
+                <i class="pi pi-shopping-bag text-cyan-400"></i>
+                <span class="font-semibold text-slate-200">{{ productDetails.sold }}</span> sold
+              </span>
+            }
+          </div>
+
+          <!-- Price Display -->
+          <div class="p-5 rounded-2xl bg-ocean-900/80 border border-ocean-700/70 backdrop-blur-md space-y-2">
+            <div class="flex items-baseline gap-3">
+              @if (appliedCoupon) {
+                <span class="text-3xl sm:text-4xl font-black text-cyan-400">
+                  ${{ appliedCoupon.discountedPrice | number:'1.2-2' }}
+                </span>
+                <span class="text-lg sm:text-xl font-bold text-slate-500 line-through">
+                  ${{ productDetails.price | number:'1.2-2' }}
+                </span>
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Coupon applied (-{{ appliedCoupon.discount }}%)
+                </span>
+              } @else if (productDetails.priceAfterDiscount && productDetails.priceAfterDiscount < productDetails.price) {
+                <span class="text-3xl sm:text-4xl font-black text-cyan-400">
+                  ${{ productDetails.priceAfterDiscount | number:'1.2-2' }}
+                </span>
+                <span class="text-lg sm:text-xl font-bold text-slate-500 line-through">
+                  ${{ productDetails.price | number:'1.2-2' }}
+                </span>
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  Save ${{ (productDetails.price - productDetails.priceAfterDiscount) | number:'1.2-2' }}
+                </span>
+              } @else {
+                <span class="text-3xl sm:text-4xl font-black text-cyan-400">
+                  ${{ productDetails.price | number:'1.2-2' }}
+                </span>
+              }
+            </div>
+            <p class="text-xs text-slate-400">Taxes calculated at checkout. Free shipping on orders over $50.</p>
+          </div>
+
+          <!-- Short Description -->
+          <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+            {{ productDetails.description }}
+          </p>
+
+          <!-- Colors Options (if provided) -->
+          @if (productDetails.colors && productDetails.colors.length > 0) {
+            <div class="space-y-2">
+              <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Color: <span class="text-white normal-case font-bold">{{ selectedColor }}</span>
+              </label>
+              <div class="flex flex-wrap gap-2">
+                @for (c of productDetails.colors; track c) {
+                  <button
+                    type="button"
+                    (click)="selectColor(c)"
+                    class="px-3 py-1.5 text-xs font-medium rounded-xl border transition-all duration-200"
+                    [ngClass]="selectedColor === c ? 'border-cyan-400 bg-cyan-500/10 text-cyan-300 ring-1 ring-cyan-500' : 'border-ocean-700 bg-ocean-900/60 text-slate-300 hover:border-slate-500'"
+                  >
+                    {{ c }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Quantity Selector & Action CTA Buttons -->
+          <div class="space-y-4 pt-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <!-- Quantity Counter -->
+              <div class="flex items-center justify-between border border-ocean-700 bg-ocean-900/80 rounded-2xl p-1 w-full sm:w-36 h-12 flex-shrink-0">
+                <button
+                  type="button"
+                  (click)="decrementQty()"
+                  [disabled]="quantity <= 1"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-ocean-800 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                >
+                  <i class="pi pi-minus text-xs"></i>
+                </button>
+                <span class="font-bold text-white text-base">{{ quantity }}</span>
+                <button
+                  type="button"
+                  (click)="incrementQty()"
+                  [disabled]="quantity >= (productDetails.quantity || 99)"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-ocean-800 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                >
+                  <i class="pi pi-plus text-xs"></i>
+                </button>
+              </div>
+
+              <!-- Main Add to Cart Button -->
+              @if (!productDetails.isAddedToCart) {
+                <button
+                  type="button"
+                  (click)="addToCart(productDetails)"
+                  class="flex-1 h-12 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+                >
+                  <i class="pi pi-shopping-cart text-lg transition-transform group-hover:scale-110"></i>
+                  <span>ADD TO CART</span>
+                </button>
+              } @else {
+                <a
+                  routerLink="/cart"
+                  class="flex-1 h-12 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i class="pi pi-check-circle text-lg"></i>
+                  <span>VIEW IN CART</span>
+                </a>
+              }
+
+              <!-- Wishlist Heart Toggle Button -->
+              <button
+                type="button"
+                (click)="toggleWishlist($event)"
+                [title]="isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'"
+                class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-2xl border transition-all duration-300 cursor-pointer"
+                [ngClass]="isInWishlist ? 'bg-rose-500/15 border-rose-500/40 text-rose-400' : 'bg-ocean-900/80 border-ocean-700 text-slate-400 hover:border-rose-500/40 hover:text-rose-400'"
+              >
+                <i class="pi text-xl transition-transform active:scale-125"
+                   [class.pi-heart-fill]="isInWishlist"
+                   [class.pi-heart]="!isInWishlist"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Coupon Code Input Box -->
+          <div class="p-4 rounded-2xl bg-ocean-900/60 border border-ocean-700/60 space-y-2.5">
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
+              <i class="pi pi-ticket text-cyan-400 text-sm"></i>
+              <span>Have a discount coupon?</span>
+              <span class="text-[11px] text-slate-500">(Try: DISCOUNT10 or WELCOME20)</span>
+            </div>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="couponCode"
+                (keydown.enter)="applyCoupon()"
+                placeholder="Enter coupon code"
+                class="flex-1 h-10 px-3.5 rounded-xl bg-ocean-950/80 border border-ocean-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 uppercase tracking-wider"
+              />
+              <button
+                type="button"
+                (click)="applyCoupon()"
+                [disabled]="couponLoading || !couponCode.trim()"
+                class="h-10 px-5 rounded-xl bg-ocean-800 hover:bg-ocean-700 border border-ocean-600 text-xs font-bold text-cyan-300 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:hover:bg-ocean-800 flex items-center justify-center gap-1.5"
+              >
+                @if (couponLoading) {
+                  <i class="pi pi-spin pi-spinner text-xs"></i>
+                  <span>Applying...</span>
                 } @else {
-                  Submit Review
+                  <span>Apply</span>
                 }
               </button>
-            </form>
-          } @else {
-            <div class="text-center py-4">
-              <i class="pi pi-lock text-4xl text-400 mb-2"></i>
-              <p class="text-color-secondary text-sm mb-3">You must be logged in to leave a review.</p>
-              <button type="button" class="btn-primary py-2 px-4 text-xs font-bold" [routerLink]="['/login']">Log In</button>
+            </div>
+
+            @if (couponError) {
+              <p class="text-xs text-rose-400 flex items-center gap-1.5">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                <span>{{ couponError }}</span>
+              </p>
+            }
+
+            @if (appliedCoupon) {
+              <p class="text-xs text-emerald-400 flex items-center gap-1.5 font-medium">
+                <i class="pi pi-check-circle text-xs"></i>
+                <span>Coupon applied! You save {{ appliedCoupon.discount }}% (${{ (productDetails.price - appliedCoupon.discountedPrice) | number:'1.2-2' }})</span>
+              </p>
+            }
+          </div>
+
+          <!-- Trust & Value Guarantee Badges -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div class="p-3 rounded-xl bg-ocean-900/40 border border-ocean-800/80 text-center">
+              <i class="pi pi-truck text-cyan-400 text-base mb-1 block"></i>
+              <span class="text-[11px] font-medium text-slate-300 block">Fast Delivery</span>
+            </div>
+            <div class="p-3 rounded-xl bg-ocean-900/40 border border-ocean-800/80 text-center">
+              <i class="pi pi-shield text-cyan-400 text-base mb-1 block"></i>
+              <span class="text-[11px] font-medium text-slate-300 block">1 Year Warranty</span>
+            </div>
+            <div class="p-3 rounded-xl bg-ocean-900/40 border border-ocean-800/80 text-center">
+              <i class="pi pi-replay text-cyan-400 text-base mb-1 block"></i>
+              <span class="text-[11px] font-medium text-slate-300 block">30-Day Returns</span>
+            </div>
+            <div class="p-3 rounded-xl bg-ocean-900/40 border border-ocean-800/80 text-center">
+              <i class="pi pi-lock text-cyan-400 text-base mb-1 block"></i>
+              <span class="text-[11px] font-medium text-slate-300 block">Secure Checkout</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Product Information Tabs: Description, Specs, Shipping -->
+      <div class="mt-16 bg-ocean-900/40 border border-ocean-800 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+        <!-- Tab Headers -->
+        <div class="flex items-center gap-2 sm:gap-4 border-b border-ocean-800 pb-4 overflow-x-auto">
+          <button
+            type="button"
+            (click)="setActiveTab('desc')"
+            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2"
+            [ngClass]="activeTab === 'desc' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-slate-200'"
+          >
+            <i class="pi pi-align-left text-xs"></i>
+            <span>Description</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="setActiveTab('specs')"
+            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2"
+            [ngClass]="activeTab === 'specs' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-slate-200'"
+          >
+            <i class="pi pi-list text-xs"></i>
+            <span>Specifications</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="setActiveTab('shipping')"
+            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2"
+            [ngClass]="activeTab === 'shipping' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-slate-200'"
+          >
+            <i class="pi pi-send text-xs"></i>
+            <span>Shipping & Warranty</span>
+          </button>
+        </div>
+
+        <!-- Tab Body -->
+        <div class="pt-6">
+          @if (activeTab === 'desc') {
+            <div class="prose prose-invert max-w-none text-slate-300 space-y-4 text-sm sm:text-base leading-relaxed">
+              <p>{{ productDetails.description }}</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                <div class="p-4 rounded-2xl bg-ocean-950/60 border border-ocean-800">
+                  <h4 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="pi pi-check text-cyan-400"></i> Premium Build & Materials
+                  </h4>
+                  <p class="text-xs text-slate-400 m-0">
+                    Engineered with premium materials designed for long-lasting performance and maximum durability under daily use.
+                  </p>
+                </div>
+                <div class="p-4 rounded-2xl bg-ocean-950/60 border border-ocean-800">
+                  <h4 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="pi pi-check text-cyan-400"></i> Verified Manufacturer Warranty
+                  </h4>
+                  <p class="text-xs text-slate-400 m-0">
+                    Backed by official manufacturer warranty coverage with full support and authorized repair network.
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (activeTab === 'specs') {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm text-slate-300 border-collapse">
+                <tbody>
+                  <tr class="border-b border-ocean-800">
+                    <th class="py-3 px-4 text-slate-400 font-semibold w-1/3 bg-ocean-950/40">Category</th>
+                    <td class="py-3 px-4 capitalize font-medium text-white">{{ productDetails.categoryName || productDetails.category }}</td>
+                  </tr>
+                  <tr class="border-b border-ocean-800">
+                    <th class="py-3 px-4 text-slate-400 font-semibold bg-ocean-950/40">SubCategory</th>
+                    <td class="py-3 px-4 capitalize font-medium text-cyan-300">{{ productDetails.subCategory || 'General' }}</td>
+                  </tr>
+                  <tr class="border-b border-ocean-800">
+                    <th class="py-3 px-4 text-slate-400 font-semibold bg-ocean-950/40">Brand</th>
+                    <td class="py-3 px-4 font-medium text-white">{{ productDetails.brand || 'Generic' }}</td>
+                  </tr>
+                  <tr class="border-b border-ocean-800">
+                    <th class="py-3 px-4 text-slate-400 font-semibold bg-ocean-950/40">Model / Slug</th>
+                    <td class="py-3 px-4 font-medium text-slate-300 font-mono text-xs">{{ productDetails.model || productDetails.id }}</td>
+                  </tr>
+                  <tr class="border-b border-ocean-800">
+                    <th class="py-3 px-4 text-slate-400 font-semibold bg-ocean-950/40">Color Option</th>
+                    <td class="py-3 px-4 font-medium text-white">{{ selectedColor || productDetails.color || 'Standard' }}</td>
+                  </tr>
+                  <tr>
+                    <th class="py-3 px-4 text-slate-400 font-semibold bg-ocean-950/40">Availability Status</th>
+                    <td class="py-3 px-4 font-medium text-emerald-400">{{ (productDetails.quantity || 0) > 0 ? 'Ready to Ship' : 'Out of Stock' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          }
+
+          @if (activeTab === 'shipping') {
+            <div class="space-y-4 text-sm text-slate-300">
+              <div class="p-4 rounded-2xl bg-ocean-950/60 border border-ocean-800">
+                <h4 class="text-sm font-bold text-white mb-1">Standard & Express Shipping</h4>
+                <p class="text-xs text-slate-400 mb-0">
+                  Standard delivery typically takes 2 to 4 business days. Express next-day shipping is available at checkout for eligible metro locations.
+                </p>
+              </div>
+              <div class="p-4 rounded-2xl bg-ocean-950/60 border border-ocean-800">
+                <h4 class="text-sm font-bold text-white mb-1">Hassle-Free Return Policy</h4>
+                <p class="text-xs text-slate-400 mb-0">
+                  If you are not 100% satisfied with your purchase, you can return it within 30 days of delivery in original packaging for a full refund or replacement.
+                </p>
+              </div>
             </div>
           }
         </div>
       </div>
 
-      <!-- Reviews Listing -->
-      <div class="col-12 md:col-7 pl-0 md:pl-4 mt-4 md:mt-0">
-        <h3 class="text-xl font-bold text-900 mt-0 mb-4 flex align-items-center gap-2">
-          <span>Customer Reviews</span>
-          @if (productDetails.ratingsAverage) {
-            <span class="text-sm font-semibold text-color-secondary bg-100 px-2 py-0.5 border-round-md">
-              <i class="pi pi-star-fill text-yellow-500 mr-1"></i>{{ productDetails.ratingsAverage }} ({{ productDetails.ratingsQuantity || 0 }} reviews)
-            </span>
-          }
-        </h3>
+      <!-- Customer Reviews & Rating Section -->
+      <div class="mt-16 pt-10 border-t border-ocean-800">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Left: Write a Review Form (lg:col-span-5) -->
+          <div class="lg:col-span-5 bg-ocean-900/50 border border-ocean-800 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <i class="pi pi-comment text-cyan-400"></i>
+              <span>Write a Review</span>
+            </h3>
 
-        @if (reviewsList.length > 0) {
-          <div class="flex flex-column gap-3">
-            @for (rev of reviewsList; track rev._id) {
-              <div class="p-3 border-round-xl border-1 border-100 bg-white">
-                <div class="flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <span class="font-bold text-sm text-900 capitalize">{{ rev.user?.name || 'Anonymous User' }}</span>
-                    <div class="flex gap-1 align-items-center mt-1">
-                      @for (star of [1,2,3,4,5]; track star) {
-                        <i class="pi pi-star-fill text-xs" 
-                           [class.text-yellow-500]="star <= rev.ratings"
-                           [class.text-200]="star > rev.ratings"></i>
-                      }
-                    </div>
+            @if (isLoggedIn) {
+              <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="space-y-4">
+                <!-- Interactive Star Rating -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    Your Rating
+                  </label>
+                  <div class="flex items-center gap-2">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <button
+                        type="button"
+                        (click)="reviewForm.get('ratings')?.setValue(star)"
+                        class="p-1 text-2xl transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                        [class.text-amber-400]="star <= (reviewForm.get('ratings')?.value || 5)"
+                        [class.text-slate-600]="star > (reviewForm.get('ratings')?.value || 5)"
+                      >
+                        <i class="pi pi-star-fill"></i>
+                      </button>
+                    }
+                    <span class="text-xs font-bold text-slate-300 ml-2">
+                      {{ reviewForm.get('ratings')?.value }}/5 Stars
+                    </span>
                   </div>
-                  <span class="text-xs text-500">{{ rev.createdAt | date:'mediumDate' }}</span>
                 </div>
-                <p class="text-sm text-800 m-0 line-height-3">{{ rev.title }}</p>
-              </div>
-            }
 
-            @if (hasMoreReviews) {
-              <div class="text-center mt-2">
-                <button type="button" class="btn-secondary py-2 px-4 text-xs font-bold" (click)="loadMoreReviews()">
-                  @if (reviewsLoading) {
-                    <i class="pi pi-spin pi-spinner mr-1"></i> Loading...
+                <!-- Review Textarea -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    Your Feedback
+                  </label>
+                  <textarea
+                    formControlName="title"
+                    rows="4"
+                    placeholder="Share your detailed experience with this product..."
+                    class="w-full px-4 py-3 rounded-2xl bg-ocean-950/80 border border-ocean-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                  ></textarea>
+                  @if (reviewForm.get('title')?.touched && reviewForm.get('title')?.invalid) {
+                    <p class="text-xs text-rose-400 mt-1">Please enter a review of at least 3 characters.</p>
+                  }
+                </div>
+
+                <!-- Submit Review Button -->
+                <button
+                  type="submit"
+                  [disabled]="submittingReview || reviewForm.invalid"
+                  class="w-full h-11 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  @if (submittingReview) {
+                    <i class="pi pi-spin pi-spinner text-xs"></i>
+                    <span>Submitting Review...</span>
                   } @else {
-                    Load More Reviews
+                    <i class="pi pi-send text-xs"></i>
+                    <span>Post Review</span>
                   }
                 </button>
+              </form>
+            } @else {
+              <div class="text-center py-8 space-y-3">
+                <div class="w-14 h-14 mx-auto rounded-full bg-ocean-800/80 border border-ocean-700 flex items-center justify-center text-cyan-400">
+                  <i class="pi pi-lock text-xl"></i>
+                </div>
+                <h4 class="text-sm font-bold text-white">Sign In to Leave Feedback</h4>
+                <p class="text-xs text-slate-400 max-w-xs mx-auto">
+                  Only verified members can leave verified ratings and reviews for our catalog items.
+                </p>
+                <a
+                  routerLink="/login"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ocean-800 hover:bg-ocean-700 border border-ocean-600 text-xs font-bold text-white transition-colors"
+                >
+                  <i class="pi pi-sign-in text-xs text-cyan-400"></i>
+                  <span>Log In to Your Account</span>
+                </a>
               </div>
             }
           </div>
-        } @else {
-          <div class="text-center py-6 border-round-xl border-1 border-dashed border-200 bg-white">
-            <i class="pi pi-comments text-5xl text-300 mb-2"></i>
-            <p class="text-color-secondary m-0">No reviews yet. Be the first to review this product!</p>
+
+          <!-- Right: Customer Reviews Listing (lg:col-span-7) -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                <span>Customer Reviews</span>
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-ocean-800 border border-ocean-700 text-cyan-400">
+                  {{ reviewsList.length }} Verified
+                </span>
+              </h3>
+            </div>
+
+            @if (reviewsList.length > 0) {
+              <div class="space-y-3">
+                @for (rev of reviewsList; track rev._id) {
+                  <div class="p-5 rounded-2xl bg-ocean-900/40 border border-ocean-800/80 backdrop-blur-sm space-y-2.5 hover:border-ocean-700 transition-colors">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <!-- User Avatar Initials -->
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow-md shadow-cyan-500/20">
+                          {{ (rev.user.name || 'U').substring(0, 2) }}
+                        </div>
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-white capitalize">{{ rev.user.name || 'Anonymous User' }}</span>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1">
+                              <i class="pi pi-check text-[8px]"></i> Verified
+                            </span>
+                          </div>
+                          <!-- Stars -->
+                          <div class="flex text-amber-400 text-xs mt-0.5">
+                            @for (star of [1,2,3,4,5]; track star) {
+                              <i class="pi"
+                                 [class.pi-star-fill]="star <= rev.ratings"
+                                 [class.pi-star]="star > rev.ratings"></i>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <span class="text-xs text-slate-500">{{ rev.createdAt | date:'mediumDate' }}</span>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed pl-12">
+                      {{ rev.title }}
+                    </p>
+                  </div>
+                }
+
+                @if (hasMoreReviews) {
+                  <div class="text-center pt-2">
+                    <button
+                      type="button"
+                      (click)="loadMoreReviews()"
+                      [disabled]="reviewsLoading"
+                      class="px-5 py-2.5 rounded-xl bg-ocean-900 hover:bg-ocean-800 border border-ocean-700 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                    >
+                      @if (reviewsLoading) {
+                        <i class="pi pi-spin pi-spinner mr-1.5"></i>
+                        <span>Loading...</span>
+                      } @else {
+                        <span>Load More Reviews</span>
+                      }
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="text-center py-12 rounded-3xl bg-ocean-900/30 border border-dashed border-ocean-800 p-8 space-y-2">
+                <i class="pi pi-comments text-4xl text-slate-600 block mb-2"></i>
+                <h4 class="text-sm font-bold text-slate-300">No Reviews Yet</h4>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">
+                  Be the first customer to share your thoughts and rate this product!
+                </p>
+              </div>
+            }
           </div>
-        }
+
+        </div>
       </div>
-    </div>
+
+    } @else {
+      <!-- Skeleton Loading State -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
+        <div class="lg:col-span-6 h-96 bg-ocean-900/50 rounded-3xl border border-ocean-800"></div>
+        <div class="lg:col-span-6 space-y-4">
+          <div class="h-6 w-32 bg-ocean-800 rounded-lg"></div>
+          <div class="h-10 w-3/4 bg-ocean-800 rounded-xl"></div>
+          <div class="h-8 w-28 bg-ocean-800 rounded-lg"></div>
+          <div class="h-24 w-full bg-ocean-800/60 rounded-2xl"></div>
+          <div class="h-12 w-full bg-ocean-800 rounded-2xl"></div>
+        </div>
+      </div>
+    }
   </div>
-</section>
+</div>

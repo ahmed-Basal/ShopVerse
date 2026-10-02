@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CategoryService } from '../../core/service/category.service';
 import { NotifecationsService } from '../../core/service/notifecations.service';
 import { ProductsService } from '../../core/service/products.service';
+import { ImageUploaderComponent, ImageUploadEvent } from '../../shared/image-uploader/image-uploader.component';
+import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-products-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ImageUploaderComponent, ImageUrlPipe],
   templateUrl: './products-management.component.html',
   styleUrl: './products-management.component.scss',
 })
@@ -22,8 +24,15 @@ export class ProductsManagementComponent implements OnInit {
   currentProductId = '';
 
   productForm!: FormGroup;
-  imageFile: File | null = null;
-  productGalleryFiles: File[] = [];
+
+  // Cover image handling
+  coverImageFile: File | null = null;
+  coverImageUrl: string = '';
+
+  // Gallery images handling
+  galleryFiles: File[] = [];
+  galleryUrls: string[] = [];
+  galleryUrlInput: string = '';
 
   constructor(
     private _productsService: ProductsService,
@@ -80,24 +89,31 @@ export class ProductsManagementComponent implements OnInit {
     this.currentProductId = '';
     this.showForm = true;
     this.initForm();
-    this.imageFile = null;
-    this.productGalleryFiles = [];
+    this.coverImageFile = null;
+    this.coverImageUrl = '';
+    this.galleryFiles = [];
+    this.galleryUrls = [];
+    this.galleryUrlInput = '';
   }
 
   openEditForm(product: any): void {
     this.isEditMode = true;
     this.currentProductId = product._id;
     this.showForm = true;
-    this.imageFile = null;
-    this.productGalleryFiles = [];
+    this.coverImageFile = null;
+    this.coverImageUrl = '';
+    this.galleryFiles = [];
+    this.galleryUrls = [];
+    this.galleryUrlInput = '';
     this.loading = true;
 
     this._productsService.getDetails(product._id).subscribe({
       next: (res) => {
         const fetchedProd = res.data;
-        const categoryId = (fetchedProd.category && typeof fetchedProd.category === 'object')
-          ? (fetchedProd.category as any)._id
-          : (fetchedProd.category || '');
+        const categoryId =
+          fetchedProd.category && typeof fetchedProd.category === 'object'
+            ? (fetchedProd.category as any)._id
+            : fetchedProd.category || '';
         const colorsStr = fetchedProd.colors ? fetchedProd.colors.join(', ') : '';
 
         this.productForm.patchValue({
@@ -109,6 +125,9 @@ export class ProductsManagementComponent implements OnInit {
           priceAfterDiscount: fetchedProd.priceAfterDiscount || null,
           colors: colorsStr,
         });
+
+        this.coverImageUrl = fetchedProd.imageCover || '';
+        this.galleryUrls = Array.isArray(fetchedProd.images) ? [...fetchedProd.images] : [];
         this.loading = false;
       },
       error: () => {
@@ -122,24 +141,49 @@ export class ProductsManagementComponent implements OnInit {
   closeForm(): void {
     this.showForm = false;
     this.productForm.reset();
-    this.imageFile = null;
-    this.productGalleryFiles = [];
+    this.coverImageFile = null;
+    this.coverImageUrl = '';
+    this.galleryFiles = [];
+    this.galleryUrls = [];
+    this.galleryUrlInput = '';
     this.isEditMode = false;
     this.currentProductId = '';
   }
 
-  onImageChange(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.imageFile = file;
+  onCoverImageChange(event: ImageUploadEvent): void {
+    if (event.mode === 'file') {
+      this.coverImageFile = event.file;
+      this.coverImageUrl = '';
+    } else {
+      this.coverImageUrl = event.url;
+      this.coverImageFile = null;
     }
   }
 
-  onGalleryImagesChange(event: any): void {
-    const files = event.target.files;
+  onGalleryFilesChange(event: any): void {
+    const files: FileList = event.target.files;
     if (files && files.length > 0) {
-      this.productGalleryFiles = Array.from(files);
+      for (let i = 0; i < files.length; i++) {
+        if (files[i].type.startsWith('image/')) {
+          this.galleryFiles.push(files[i]);
+        }
+      }
     }
+  }
+
+  removeGalleryFile(index: number): void {
+    this.galleryFiles.splice(index, 1);
+  }
+
+  addGalleryUrl(): void {
+    const trimmed = this.galleryUrlInput.trim();
+    if (!trimmed) return;
+    this.galleryUrls.push(trimmed);
+    this.galleryUrlInput = '';
+  }
+
+  removeGalleryUrl(index: number): void {
+    this.galleryUrls.splice(index, 1);
   }
 
   submit(): void {
@@ -176,13 +220,27 @@ export class ProductsManagementComponent implements OnInit {
       formData.append('colors', color);
     });
 
-    if (this.imageFile) {
-      formData.append('imageCover', this.imageFile);
+    // Cover Image: either file or direct URL
+    if (this.coverImageFile) {
+      formData.append('imageCover', this.coverImageFile);
+    } else if (this.coverImageUrl) {
+      formData.append('imageCover', this.coverImageUrl);
+    } else if (!this.isEditMode) {
+      this._notifecationsService.showError('Image Required', 'Please provide a cover image by uploading a file or entering a URL.');
+      return;
     }
 
-    if (this.productGalleryFiles.length > 0) {
-      this.productGalleryFiles.forEach((file: File) => {
+    // Gallery files
+    if (this.galleryFiles.length > 0) {
+      this.galleryFiles.forEach((file: File) => {
         formData.append('images', file);
+      });
+    }
+
+    // Gallery URLs
+    if (this.galleryUrls.length > 0) {
+      this.galleryUrls.forEach((url: string) => {
+        formData.append('images', url);
       });
     }
 
@@ -201,11 +259,6 @@ export class ProductsManagementComponent implements OnInit {
         },
       });
     } else {
-      if (!this.imageFile) {
-        this._notifecationsService.showError('Error', 'Image cover is required');
-        this.loading = false;
-        return;
-      }
       this._productsService.createProduct(formData).subscribe({
         next: () => {
           this._notifecationsService.showSuccess('Success', 'Product created successfully');

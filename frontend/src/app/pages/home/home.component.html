@@ -1,218 +1,318 @@
-<section class="py-4">
-  <div class="container-fluid">
-    
-    <!-- Hot Sale Carousel Section -->
-    <div class="row mb-5">
-      <div class="col-12">
-        <h5 class="font-bold text-color-secondary uppercase">hot sale</h5>
-        <div class="card overflow-hidden border-round-xl">
+<div class="min-h-screen pb-16">
+  <!-- HERO BANNER -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-800 border-b border-ocean-500/40">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_50%)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(6,182,212,0.08),transparent_50%)]"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 py-12 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <!-- Left Hero Text -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue/10 border border-blue/30 text-blue text-xs font-bold uppercase tracking-wider">
+          <i class="pi pi-bolt text-cyan"></i> Next-Gen Shopping
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+          Next-Gen Quality <br />
+          <span class="bg-gradient-to-r from-blue via-cyan to-blue bg-clip-text text-transparent">
+            Delivered To Your Door
+          </span>
+        </h1>
+        <p class="text-ocean-300 text-base md:text-lg max-w-xl leading-relaxed">
+          Explore thousands of hand-crafted and premium brand collections with lightning-fast checkout and seamless real-time tracking.
+        </p>
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <a routerLink="/products"
+             class="px-6 py-3 rounded-xl bg-gradient-to-r from-blue to-cyan text-white font-semibold shadow-blue hover:opacity-95 transition-all flex items-center gap-2">
+            <span>Explore Collection</span>
+            <i class="pi pi-arrow-right text-xs"></i>
+          </a>
+          <a routerLink="/brands"
+             class="px-6 py-3 rounded-xl bg-ocean-800 border border-ocean-500/80 text-ocean-200 font-semibold hover:text-white hover:bg-ocean-700/80 transition-all">
+            Browse Brands
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="pt-6 grid grid-cols-3 gap-4 border-t border-ocean-500/30 max-w-md">
+          <div>
+            <div class="text-xl font-extrabold text-white">10K+</div>
+            <div class="text-xs text-ocean-300">Verified Items</div>
+          </div>
+          <div>
+            <div class="text-xl font-extrabold text-white">99.9%</div>
+            <div class="text-xs text-ocean-300">Satisfaction</div>
+          </div>
+          <div>
+            <div class="text-xl font-extrabold text-white">24/7</div>
+            <div class="text-xs text-ocean-300">Fast Support</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Galleria Showcase -->
+      <div class="lg:col-span-5">
+        <div class="rounded-2xl p-2 bg-ocean-800/60 backdrop-blur-md border border-ocean-500/50 shadow-card">
           <p-galleria
             [value]="images"
             [circular]="true"
             [showItemNavigators]="true"
             [showThumbnails]="false"
-            [containerStyle]="{
-              'max-width': '100%',
-              'border-radius': '12px',
-              overflow: 'hidden'
-            }"
+            [autoPlay]="true"
+            [transitionInterval]="4000"
+            [containerStyle]="{'max-width': '100%', 'border-radius': '12px', 'overflow': 'hidden'}"
           >
             <ng-template pTemplate="item" let-item>
-              <img
-                [src]="item.itemImageSrc"
-                style="width: 100%; display: block; height: 260px; object-fit: cover;"
-                [alt]="item.alt"
-              />
+              <div class="relative w-full h-[280px] sm:h-[320px] bg-white rounded-xl overflow-hidden flex items-center justify-center p-4">
+                <img
+                  [src]="item.itemImageSrc"
+                  [alt]="item.alt"
+                  class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+                />
+                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-ocean-950/90 to-transparent p-4">
+                  <span class="text-xs font-bold uppercase tracking-wider text-cyan">Featured Highlight</span>
+                  <h4 class="text-sm font-semibold text-white truncate">{{ item.title }}</h4>
+                </div>
+              </div>
             </ng-template>
           </p-galleria>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Controls Row (Search & Sort) -->
-    <div class="flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-      <h2 class="text-color-secondary font-bold capitalize m-0">popular products</h2>
+  <!-- POPULAR BRANDS STRIP -->
+  @if (brandsList.length > 0) {
+    <section class="max-w-7xl mx-auto px-4 py-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-white">Featured Brands</h3>
+          <p class="text-xs text-ocean-300">Top recognized manufacturers and designers</p>
+        </div>
+        <a routerLink="/brands" class="text-xs font-semibold text-blue hover:text-cyan transition-colors flex items-center gap-1">
+          <span>View all brands</span>
+          <i class="pi pi-chevron-right text-[10px]"></i>
+        </a>
+      </div>
 
-      <div class="flex flex-wrap align-items-center gap-3 w-full md:w-auto">
-        <!-- Search Input -->
-        <div class="search-bar-container w-full md:w-20rem">
-          <i class="pi pi-search search-icon"></i>
+      <div class="flex gap-4 overflow-x-auto pb-3 pt-1 scrollbar-thin">
+        @for (b of brandsList; track b._id) {
+          <a [routerLink]="['/brands', b._id]"
+             class="flex-shrink-0 group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-ocean-800/80 border border-ocean-500/50 hover:border-blue/50 hover:bg-ocean-700/80 transition-all shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center p-1 overflow-hidden">
+              @if (b.image) {
+                <img [src]="b.image" [alt]="b.name" class="w-full h-full object-contain" />
+              } @else {
+                <i class="pi pi-tag text-ocean-700 text-xs"></i>
+              }
+            </div>
+            <span class="text-xs font-semibold text-ocean-200 group-hover:text-white transition-colors">
+              {{ b.name }}
+            </span>
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- MAIN CATALOG CONTROLS & PRODUCT LIST -->
+  <main class="max-w-7xl mx-auto px-4 pt-6">
+    <!-- Controls Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-ocean-500/40">
+      <div>
+        <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">Trending Catalog</h2>
+        <p class="text-xs text-ocean-300 mt-0.5">Showing {{ totalProducts }} curated products</p>
+      </div>
+
+      <!-- Search & Sort Controls -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Search bar -->
+        <div class="relative w-full sm:w-64">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-ocean-400 text-sm"></i>
           <input
             type="text"
             [ngModel]="search$.value"
             (ngModelChange)="onSearch($event)"
-            placeholder="Search products..."
-            class="search-input"
+            placeholder="Search catalog..."
+            class="w-full pl-9 pr-4 py-2 text-sm rounded-xl bg-ocean-800 border border-ocean-500/70 text-ocean-100 placeholder-ocean-400 focus:outline-none focus:border-blue transition-all"
           />
         </div>
 
         <!-- Sort Select -->
-        <select
-          [ngModel]="sort$.value"
-          (change)="onSortChange($any($event.target).value)"
-          class="sort-select"
-        >
-          @for (opt of sortOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
+        <div class="relative w-full sm:w-48">
+          <select
+            [ngModel]="sort$.value"
+            (change)="onSortChange($any($event.target).value)"
+            class="w-full appearance-none px-3 py-2 pr-8 text-sm rounded-xl bg-ocean-800 border border-ocean-500/70 text-ocean-100 focus:outline-none focus:border-blue transition-all cursor-pointer"
+          >
+            @for (opt of sortOptions; track opt.value) {
+              <option [value]="opt.value" class="bg-ocean-800 text-ocean-100">{{ opt.label }}</option>
+            }
+          </select>
+          <i class="pi pi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ocean-400 pointer-events-none"></i>
+        </div>
       </div>
     </div>
 
-    <!-- Products Grid / Loading / States -->
+    <!-- Product Grid State -->
     @if (loading) {
-      <div class="flex justify-content-center align-items-center py-8">
-        <i class="pi pi-spin pi-spinner text-4xl text-accent"></i>
+      <div class="flex flex-col items-center justify-center py-24 gap-3">
+        <i class="pi pi-spin pi-spinner text-4xl text-blue"></i>
+        <p class="text-sm text-ocean-300">Loading catalog items...</p>
       </div>
     } @else if (error) {
-      <div class="error-container text-center py-6 border-round-xl border-1 border-200">
-        <i class="pi pi-exclamation-circle text-4xl text-danger mb-2"></i>
-        <p class="text-danger font-semibold mb-3">{{ error }}</p>
-        <button class="btn-primary" (click)="onSearch(search$.value)">Retry</button>
+      <div class="my-12 p-8 text-center rounded-2xl bg-ocean-800/80 border border-red-500/30 max-w-lg mx-auto">
+        <i class="pi pi-exclamation-triangle text-4xl text-red-400 mb-3"></i>
+        <h4 class="text-base font-bold text-white mb-1">Catalog Unavailable</h4>
+        <p class="text-xs text-ocean-300 mb-4">{{ error }}</p>
+        <button (click)="onSearch(search$.value)"
+                class="px-5 py-2 text-xs font-semibold rounded-xl bg-blue text-white hover:bg-blue-hover transition-colors">
+          Retry
+        </button>
       </div>
     } @else if (productsList.length === 0) {
-      <div class="empty-container text-center py-8 border-round-xl border-1 border-200">
-        <i class="pi pi-search text-5xl text-muted mb-3"></i>
-        <h3 class="text-xl font-bold mb-2">No products found</h3>
-        <p class="text-muted mb-4">We couldn't find any products matching your filters.</p>
-        <button class="btn-secondary px-4 py-2" (click)="onSearch('')">Reset Search</button>
+      <div class="my-12 p-12 text-center rounded-2xl bg-ocean-800/50 border border-ocean-500/50 max-w-lg mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-ocean-700/60 border border-ocean-500/50 flex items-center justify-center mx-auto mb-4">
+          <i class="pi pi-search text-2xl text-ocean-300"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">No products found</h3>
+        <p class="text-xs text-ocean-300 mb-5">Try tweaking your search keywords or clearing sorting filters.</p>
+        <button (click)="onSearch('')"
+                class="px-5 py-2 text-xs font-semibold rounded-xl bg-ocean-700 text-ocean-200 border border-ocean-500 hover:text-white transition-all">
+          Clear Filters
+        </button>
       </div>
     } @else {
-      <!-- Main Grid -->
-      <div class="grid">
+      <!-- 4-Column Product Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6">
         @for (product of productsList; track product.id) {
-          <div class="col-12 sm:col-6 md:col-4 lg:col-3 p-2">
-            <div class="product-home-card flex flex-column h-full border-1 border-round-xl overflow-hidden bg-elevated">
-              
-              <!-- Card Image & Discount Overlay -->
-              <figure class="m-0 overflow-hidden relative cursor-pointer" [routerLink]="['/details', product.id]">
-                <img
-                  [src]="product.image"
-                  (error)="img.src = './assets/product-1.jpg'"
-                  #img
-                  class="w-full object-cover"
-                  style="height: 180px;"
-                  [alt]="product.title"
-                />
+          <div class="group relative flex flex-col rounded-2xl bg-ocean-800 border border-ocean-500/60 hover:border-blue/50 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1">
+            
+            <!-- Image Area -->
+            <div class="relative w-full h-52 bg-white flex items-center justify-center p-4 overflow-hidden cursor-pointer"
+                 [routerLink]="['/details', product.id]">
+              <img
+                [src]="product.imageCover | imageUrl"
+                (error)="img.src = '/assets/product-1.jpg'"
+                #img
+                [alt]="product.title"
+                class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+              />
 
-                <!-- Discount badge (only when coupon state has discountPercent) -->
-                @if (couponStates[product.id]?.discountPercent) {
-                  <span class="badge-coupon">-{{ couponStates[product.id].discountPercent }}% OFF</span>
-                }
-              </figure>
+              <!-- Brand Pill Badge -->
+              @if (product.brand?.name) {
+                <span class="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-ocean-900/80 backdrop-blur-md text-[10px] font-bold text-ocean-200 border border-ocean-500/50">
+                  {{ product.brand.name }}
+                </span>
+              }
 
-              <!-- Card Content -->
-              <div class="p-3 flex flex-column justify-content-between flex-1 gap-2">
-                <div>
-                  <h4 class="text-sm font-bold text-color-secondary uppercase m-0">{{ product.brand }}</h4>
-                  <h3 class="product-title font-bold text-base mt-1 mb-2 text-ellipsis" [routerLink]="['/details', product.id]">{{ product.title }}</h3>
-                  <p class="product-desc text-xs text-muted leading-relaxed m-0">{{ product.description }}</p>
+              <!-- Coupon / Discount Badge -->
+              @if (couponStates[product.id]?.discountPercent) {
+                <span class="absolute bottom-3 left-3 px-2 py-0.5 rounded-md bg-red-500/90 text-white text-[10px] font-extrabold tracking-wider">
+                  -{{ couponStates[product.id].discountPercent }}% OFF
+                </span>
+              }
+
+              <!-- Wishlist Heart Button -->
+              <button (click)="toggleWishlist(product, $event)"
+                      class="absolute top-3 right-3 w-8 h-8 rounded-full bg-ocean-900/70 backdrop-blur-md border border-ocean-500/50 flex items-center justify-center transition-all hover:scale-110 cursor-pointer"
+                      [class.text-red-500]="isInWishlist(product.id)"
+                      [class.text-ocean-300]="!isInWishlist(product.id)"
+                      title="Toggle Wishlist">
+                <i class="pi" [class.pi-heart-fill]="isInWishlist(product.id)" [class.pi-heart]="!isInWishlist(product.id)"></i>
+              </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 p-4 flex flex-col justify-between space-y-3">
+              <div>
+                <!-- Category breadcrumb -->
+                <div class="text-[11px] font-semibold text-ocean-300 truncate">
+                  {{ product.category?.name || 'General' }}
                 </div>
 
-                <!-- Price Row -->
-                <div class="flex align-items-center justify-content-between mt-2">
-                  <div class="price-box">
-                    @if (couponStates[product.id]?.discountedPrice) {
-                      <span class="discounted-price font-bold text-lg text-danger mr-2">
-                        ${{ couponStates[product.id].discountedPrice }}
-                      </span>
-                      <span class="original-price text-muted text-xs text-through">
-                        ${{ product.price }}
-                      </span>
-                    } @else {
-                      <span class="original-price font-bold text-lg">
-                        ${{ product.price }}
-                      </span>
-                    }
-                  </div>
+                <!-- Product Title -->
+                <h3 class="text-sm font-bold text-white line-clamp-2 mt-1 group-hover:text-blue transition-colors cursor-pointer"
+                    [routerLink]="['/details', product.id]">
+                  {{ product.title }}
+                </h3>
 
-                  <!-- Add to Cart button -->
-                  @if (!product.isAddedToCart) {
-                    <button type="button" class="btn-cart-circle flex align-items-center justify-content-center" (click)="addToCart(product)" title="Add to Cart">
-                      <i class="pi pi-cart-plus text-sm"></i>
-                    </button>
+                <!-- Ratings and Reviews -->
+                <div class="flex items-center gap-1.5 mt-2">
+                  <div class="flex items-center text-amber-400 text-xs">
+                    <i class="pi pi-star-fill text-[11px]"></i>
+                  </div>
+                  <span class="text-xs font-bold text-ocean-100">{{ product.ratingsAverage || '4.5' }}</span>
+                  <span class="text-[11px] text-ocean-400">({{ product.ratingsQuantity || 12 }})</span>
+                </div>
+              </div>
+
+              <!-- Price & Add To Cart Button -->
+              <div class="pt-2 border-t border-ocean-600/40 flex items-center justify-between">
+                <div>
+                  @if (couponStates[product.id]?.discountedPrice) {
+                    <div class="text-xs text-ocean-400 line-through">${{ product.price }}</div>
+                    <div class="text-base font-extrabold text-cyan">
+                      ${{ couponStates[product.id].discountedPrice }}
+                    </div>
                   } @else {
-                    <a [routerLink]="['/cart']" class="btn-cart-circle active flex align-items-center justify-content-center" title="Go to Cart">
-                      <i class="pi pi-check text-sm"></i>
-                    </a>
+                    <div class="text-base font-extrabold text-white">
+                      ${{ product.price }}
+                    </div>
                   }
                 </div>
 
-                <!-- Per-Product Coupon Form -->
-                <div class="coupon-form mt-2 pt-2 border-top-1 border-200">
-                  <div class="flex gap-2">
+                <!-- Add to cart CTA -->
+                <button (click)="addToCart(product)"
+                        [class.bg-emerald-500]="product.isAddedToCart"
+                        [class.bg-blue]="!product.isAddedToCart"
+                        class="px-3 py-1.5 rounded-xl text-white text-xs font-semibold shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5 cursor-pointer">
+                  <i class="pi" [class.pi-check]="product.isAddedToCart" [class.pi-shopping-cart]="!product.isAddedToCart"></i>
+                  <span>{{ product.isAddedToCart ? 'Added' : 'Add' }}</span>
+                </button>
+              </div>
+
+              <!-- Coupon Bar -->
+              <div class="pt-1">
+                @if (couponStates[product.id]?.discountedPrice) {
+                  <div class="flex items-center justify-between text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">
+                    <span>Coupon applied!</span>
+                    <button (click)="removeProductCoupon(product.id)" class="text-ocean-400 hover:text-white cursor-pointer">
+                      <i class="pi pi-times text-[10px]"></i>
+                    </button>
+                  </div>
+                } @else {
+                  <div class="flex items-center gap-1">
                     <input
                       type="text"
                       [(ngModel)]="couponInputs[product.id]"
-                      [disabled]="!!couponStates[product.id]?.loading"
-                      placeholder="Promo code"
-                      class="coupon-card-input flex-1 p-2"
-                      (keydown.enter)="applyProductCoupon(product.id)"
+                      placeholder="Coupon"
+                      class="flex-1 min-w-0 px-2 py-1 text-[11px] rounded-lg bg-ocean-900 border border-ocean-600/60 text-ocean-100 placeholder-ocean-500 focus:outline-none focus:border-blue"
                     />
-                    
-                    @if (!couponStates[product.id]?.discountedPrice) {
-                      <button
-                        type="button"
-                        class="btn-apply-card py-2 px-3 font-semibold text-xs"
-                        [disabled]="!!couponStates[product.id]?.loading || !couponInputs[product.id]"
-                        (click)="applyProductCoupon(product.id)"
-                      >
-                        @if (couponStates[product.id]?.loading) {
-                          <i class="pi pi-spin pi-spinner text-xs"></i>
-                        } @else {
-                          Apply
-                        }
-                      </button>
-                    } @else {
-                      <button
-                        type="button"
-                        class="btn-remove-card py-2 px-3 font-semibold text-xs text-danger"
-                        (click)="removeProductCoupon(product.id)"
-                      >
-                        Reset
-                      </button>
-                    }
+                    <button (click)="applyProductCoupon(product.id)"
+                            class="px-2 py-1 text-[11px] font-semibold rounded-lg bg-ocean-700 border border-ocean-500 text-ocean-200 hover:text-white hover:bg-ocean-600 transition-colors cursor-pointer">
+                      Apply
+                    </button>
                   </div>
-
-                  <!-- Per-product coupon error status feedback -->
                   @if (couponStates[product.id]?.errorMsg) {
-                    <span class="text-xxs text-danger block mt-1">
-                      {{ couponStates[product.id].errorMsg }}
-                    </span>
+                    <p class="text-[10px] text-red-400 mt-1">{{ couponStates[product.id]?.errorMsg }}</p>
                   }
-                </div>
-
+                }
               </div>
-
             </div>
+
           </div>
         }
       </div>
 
-      <!-- PrimeNG Paginator Controls -->
-      <div class="paginator-wrapper mt-5 flex flex-column align-items-center gap-3">
+      <!-- PrimeNG Paginator with Dark Ocean Theme Styling -->
+      <div class="mt-10 flex justify-center">
         <p-paginator
           [rows]="limit$.value"
           [totalRecords]="totalProducts"
           [first]="(page$.value - 1) * limit$.value"
-          [rowsPerPageOptions]="[4, 6, 8, 10]"
           (onPageChange)="onPageChange($event)"
+          [rowsPerPageOptions]="[8, 12, 16, 24]"
         ></p-paginator>
-
-        <div class="flex align-items-center gap-2">
-          <label for="productsPerPage" class="text-sm font-semibold text-color-secondary">Products per page:</label>
-          <input
-            id="productsPerPage"
-            type="number"
-            min="1"
-            max="10"
-            [ngModel]="limit$.value"
-            (ngModelChange)="onLimitChange($event)"
-            class="w-4rem p-inputtext p-component border-round p-2 border-1 border-300 text-center"
-          />
-        </div>
       </div>
     }
-
-  </div>
-</section>
+  </main>
+</div>

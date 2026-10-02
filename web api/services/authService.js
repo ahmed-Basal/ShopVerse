@@ -1,41 +1,43 @@
 const crypto = require("crypto");
-
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const sendEmail = require("../utils/sendEmail");
 const createToken = require("../utils/createToken");
+const prisma = require("../config/prismaClient");
 
-const User = require("../models/userModel");
-const ApiKey = require("../models/apiKeyModel");
-
+// Helper to strip password from user object
+const sanitizeUser = (user) => {
+  const { password, ...rest } = user;
+  return rest;
+};
 
 exports.signup = asyncHandler(async (req, res, next) => {
-  const user = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
+  const hashedPassword = await bcrypt.hash(req.body.password, 12);
+  const user = await prisma.user.create({
+    data: {
+      name: req.body.name,
+      email: req.body.email,
+      password: hashedPassword,
+    },
   });
 
-  const token = createToken(user._id);
-
-  res.status(201).json({ data: user, token });
+  const token = createToken(user.id);
+  res.status(201).json({ data: sanitizeUser(user), token });
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const user = await prisma.user.findUnique({
+    where: { email: req.body.email },
+  });
 
   if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
     return next(new ApiError("Incorrect email or password", 401));
   }
 
-  const token = createToken(user._id);
-
-  delete user._doc.password;
-
-  res.status(200).json({ data: user, token });
+  const token = createToken(user.id);
+  res.status(200).json({ data: sanitizeUser(user), token });
 });
 
 exports.protect = asyncHandler(async (req, res, next) => {
@@ -50,37 +52,29 @@ exports.protect = asyncHandler(async (req, res, next) => {
   }
   if (!token) {
     return next(
-      new ApiError(
-        "You are not login, Please login to get access this route",
-        401,
-      ),
+      new ApiError("You are not login, Please login to get access this route", 401)
     );
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-  const currentUser = await User.findById(decoded.userId);
+  const currentUser = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+  });
   if (!currentUser) {
     return next(
-      new ApiError(
-        "The user that belong to this token does no longer exist",
-        401,
-      ),
+      new ApiError("The user that belong to this token does no longer exist", 401)
     );
   }
 
   if (currentUser.passwordChangedAt) {
     const passChangedTimestamp = parseInt(
       currentUser.passwordChangedAt.getTime() / 1000,
-      10,
+      10
     );
-
     if (passChangedTimestamp > decoded.iat) {
       return next(
-        new ApiError(
-          "User recently changed his password. please login again..",
-          401,
-        ),
+        new ApiError("User recently changed his password. please login again..", 401)
       );
     }
   }
@@ -100,27 +94,29 @@ exports.protectApiKey = asyncHandler(async (req, res, next) => {
     return next(new ApiError("API Key is required to access this route", 401));
   }
 
-  const apiKeyDoc = await ApiKey.findOne({ key, isActive: true }).populate("user");
+  const apiKeyDoc = await prisma.apiKey.findFirst({
+    where: { key, isActive: true },
+    include: {
+      user: true,
+      permissions: true,
+    },
+  });
 
   if (!apiKeyDoc) {
     return next(new ApiError("Invalid or inactive API Key", 401));
   }
 
-  if (apiKeyDoc.expiresAt && apiKeyDoc.expiresAt < Date.now()) {
+  if (apiKeyDoc.expiresAt && apiKeyDoc.expiresAt < new Date()) {
     return next(new ApiError("API Key has expired", 401));
   }
 
   const currentUser = apiKeyDoc.user;
   if (!currentUser || !currentUser.active) {
     return next(
-      new ApiError(
-        "The user associated with this API key is inactive or no longer exists",
-        401
-      )
+      new ApiError("The user associated with this API key is inactive or no longer exists", 401)
     );
   }
 
-  // Verify route and method permissions (scopes)
   if (apiKeyDoc.permissions && apiKeyDoc.permissions.length > 0) {
     const routeTemplate = req.route
       ? `${req.baseUrl}${req.route.path === "/" ? "" : req.route.path}`
@@ -130,20 +126,15 @@ exports.protectApiKey = asyncHandler(async (req, res, next) => {
     const isAllowed = apiKeyDoc.permissions.some((permission) => {
       const permRoute = permission.route.trim();
       const routeMatch = permRoute === "*" || permRoute === routeTemplate;
-
       const methodMatch =
         permission.methods.includes("*") ||
         permission.methods.some((m) => m.toUpperCase() === currentMethod);
-
       return routeMatch && methodMatch;
     });
 
     if (!isAllowed) {
       return next(
-        new ApiError(
-          `API Key does not have permission to access ${currentMethod} ${routeTemplate}`,
-          403
-        )
+        new ApiError(`API Key does not have permission to access ${currentMethod} ${routeTemplate}`, 403)
       );
     }
   }
@@ -154,10 +145,7 @@ exports.protectApiKey = asyncHandler(async (req, res, next) => {
 
 exports.protectOrApiKey = asyncHandler(async (req, res, next) => {
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
   }
 
@@ -171,36 +159,30 @@ exports.protectOrApiKey = asyncHandler(async (req, res, next) => {
 exports.allowedTo = (...roles) =>
   asyncHandler(async (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return next(
-        new ApiError("You are not allowed to access this route", 403),
-      );
+      return next(new ApiError("You are not allowed to access this route", 403));
     }
     next();
   });
 
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const user = await prisma.user.findUnique({ where: { email: req.body.email } });
   if (!user) {
-    // Timing mitigation: delay response to match the time taken by DB save & SMTP email sending
-    const delay = Math.floor(Math.random() * 400) + 400; // 400ms to 800ms
+    const delay = Math.floor(Math.random() * 400) + 400;
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return res
-      .status(200)
-      .json({ status: "Success", message: "Reset code sent to email" });
+    return res.status(200).json({ status: "Success", message: "Reset code sent to email" });
   }
 
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const hashedResetCode = crypto
-    .createHash("sha256")
-    .update(resetCode)
-    .digest("hex");
+  const hashedResetCode = crypto.createHash("sha256").update(resetCode).digest("hex");
 
-  user.passwordResetCode = hashedResetCode;
-
-  user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-  user.passwordResetVerified = false;
-
-  await user.save();
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordResetCode: hashedResetCode,
+      passwordResetExpires: new Date(Date.now() + 10 * 60 * 1000),
+      passwordResetVerified: false,
+    },
+  });
 
   const message = `Hi ${user.name},\n We received a request to reset the password on your E-shop Account. \n ${resetCode} \n Enter this code to complete the reset. \n Thanks for helping us keep your account secure.\n The E-shop Team`;
   try {
@@ -210,17 +192,18 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
       message,
     });
   } catch (err) {
-    user.passwordResetCode = undefined;
-    user.passwordResetExpires = undefined;
-    user.passwordResetVerified = undefined;
-
-    await user.save();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetCode: null,
+        passwordResetExpires: null,
+        passwordResetVerified: null,
+      },
+    });
     return next(new ApiError("There is an error in sending email", 500));
   }
 
-  res
-    .status(200)
-    .json({ status: "Success", message: "Reset code sent to email" });
+  res.status(200).json({ status: "Success", message: "Reset code sent to email" });
 });
 
 exports.verifyPassResetCode = asyncHandler(async (req, res, next) => {
@@ -229,41 +212,45 @@ exports.verifyPassResetCode = asyncHandler(async (req, res, next) => {
     .update(req.body.resetCode)
     .digest("hex");
 
-  const user = await User.findOne({
-    passwordResetCode: hashedResetCode,
-    passwordResetExpires: { $gt: Date.now() },
+  const user = await prisma.user.findFirst({
+    where: {
+      passwordResetCode: hashedResetCode,
+      passwordResetExpires: { gt: new Date() },
+    },
   });
   if (!user) {
     return next(new ApiError("Reset code invalid or expired"));
   }
 
-  user.passwordResetVerified = true;
-  await user.save();
-
-  res.status(200).json({
-    status: "Success",
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordResetVerified: true },
   });
+
+  res.status(200).json({ status: "Success" });
 });
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const user = await prisma.user.findUnique({ where: { email: req.body.email } });
   if (!user) {
-    return next(
-      new ApiError(`There is no user with email ${req.body.email}`, 404),
-    );
+    return next(new ApiError(`There is no user with email ${req.body.email}`, 404));
   }
 
   if (!user.passwordResetVerified) {
     return next(new ApiError("Reset code not verified", 400));
   }
 
-  user.password = req.body.newPassword;
-  user.passwordResetCode = undefined;
-  user.passwordResetExpires = undefined;
-  user.passwordResetVerified = undefined;
+  const hashedPassword = await bcrypt.hash(req.body.newPassword, 12);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      passwordResetCode: null,
+      passwordResetExpires: null,
+      passwordResetVerified: null,
+    },
+  });
 
-  await user.save();
-
-  const token = createToken(user._id);
+  const token = createToken(user.id);
   res.status(200).json({ token });
 });

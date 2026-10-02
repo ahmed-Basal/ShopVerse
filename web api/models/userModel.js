@@ -67,6 +67,22 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+const setImageURL = (doc) => {
+  const baseUrl = process.env.BASE_URL || "http://localhost:8000";
+  if (doc.profileImg && !doc.profileImg.startsWith("http") && !doc.profileImg.startsWith("data:")) {
+    const imageUrl = `${baseUrl}/users/${doc.profileImg}`;
+    doc.profileImg = imageUrl;
+  }
+};
+
+userSchema.post("init", (doc) => {
+  setImageURL(doc);
+});
+
+userSchema.post("save", (doc) => {
+  setImageURL(doc);
+});
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;

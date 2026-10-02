@@ -3,16 +3,16 @@
     "server.js",
     "config/**/*.js",
     "middlewares/**/*.js",
-    "models/**/*.js",
     "routes/**/*.js",
     "services/**/*.js",
     "utils/**/*.js",
-    "env.config"
+    ".env"
   ],
   "ignore": [
     "node_modules",
     "uploads",
-    "**/node_modules/**"
+    "**/node_modules/**",
+    "models/**"
   ],
   "ext": "js,json"
 }

@@ -2,7 +2,7 @@ const slugify = require("slugify");
 const bcrypt = require("bcryptjs");
 const { check, body } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
-const User = require("../../models/userModel");
+const prisma = require("../../config/prismaClient");
 
 exports.createUserValidator = [
   check("name")
@@ -21,9 +21,9 @@ exports.createUserValidator = [
     .isEmail()
     .withMessage("Invalid email address")
     .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
+      prisma.user.findUnique({ where: { email: val } }).then((user) => {
         if (user) {
-          return Promise.reject(new Error("E-mail already in user"));
+          return Promise.reject(new Error("E-mail already in use"));
         }
       }),
     ),
@@ -56,12 +56,12 @@ exports.createUserValidator = [
 ];
 
 exports.getUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
+  check("id").notEmpty().withMessage("Invalid User id format"),
   validatorMiddleware,
 ];
 
 exports.updateUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
+  check("id").notEmpty().withMessage("Invalid User id format"),
   body("name")
     .optional()
     .custom((val, { req }) => {
@@ -74,9 +74,9 @@ exports.updateUserValidator = [
     .isEmail()
     .withMessage("Invalid email address")
     .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
+      prisma.user.findUnique({ where: { email: val } }).then((user) => {
         if (user) {
-          return Promise.reject(new Error("E-mail already in user"));
+          return Promise.reject(new Error("E-mail already in use"));
         }
       }),
     ),
@@ -91,7 +91,7 @@ exports.updateUserValidator = [
 ];
 
 exports.changeUserPasswordValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
+  check("id").notEmpty().withMessage("Invalid User id format"),
   body("currentPassword")
     .notEmpty()
     .withMessage("You must enter your current password"),
@@ -102,7 +102,7 @@ exports.changeUserPasswordValidator = [
     .notEmpty()
     .withMessage("You must enter new password")
     .custom(async (val, { req }) => {
-      const user = await User.findById(req.params.id);
+      const user = await prisma.user.findUnique({ where: { id: req.params.id } });
       if (!user) {
         throw new Error("There is no user for this id");
       }
@@ -123,7 +123,7 @@ exports.changeUserPasswordValidator = [
 ];
 
 exports.deleteUserValidator = [
-  check("id").isMongoId().withMessage("Invalid User id format"),
+  check("id").notEmpty().withMessage("Invalid User id format"),
   validatorMiddleware,
 ];
 
@@ -140,9 +140,9 @@ exports.updateLoggedUserValidator = [
     .isEmail()
     .withMessage("Invalid email address")
     .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
+      prisma.user.findUnique({ where: { email: val } }).then((user) => {
         if (user) {
-          return Promise.reject(new Error("E-mail already in user"));
+          return Promise.reject(new Error("E-mail already in use"));
         }
       }),
     ),

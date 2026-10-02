@@ -5,6 +5,7 @@ import { CategoryService } from '../../core/service/category.service';
 import { SubcategoryService } from '../../core/service/subcategory.service';
 import { CategoryModel } from '../../core/models/category/category.model';
 import { SubcategoryModel } from '../../core/models/subcategory/subcategory.model';
+import { baseUrl } from '../../core/apiRoot/baseUrl';
 
 @Component({
   selector: 'app-category',
@@ -68,21 +69,22 @@ export class CategoryComponent implements OnInit {
     this.expandedCategories[categoryId] = !this.expandedCategories[categoryId];
   }
 
- getImageCategory(category: CategoryModel): string {
-  if (category.image) {
-   
-    if (category.image.startsWith('http')) {
-      return category.image;
+  getImageCategory(category: CategoryModel): string {
+    if (category.image) {
+      if (category.image.startsWith('http://') || category.image.startsWith('https://') || category.image.startsWith('data:')) {
+        return category.image;
+      }
+      if (category.image.startsWith('/')) {
+        return `${baseUrl}${category.image}`;
+      }
+      return `${baseUrl}/categories/${category.image}`;
     }
-    
-    return `http://localhost:8000/categories/${category.image}`;
-  }
 
-  const name = category.name.toLowerCase();
-  const knownAssets = ['appliances', 'audio', 'gaming', 'laptop', 'mobile', 'tv'];
-  if (knownAssets.includes(name)) {
-    return `/assets/categories/${name}.jpg`;
+    const name = category.name ? category.name.toLowerCase() : '';
+    const knownAssets = ['appliances', 'audio', 'gaming', 'laptop', 'mobile', 'tv'];
+    if (knownAssets.includes(name)) {
+      return `./assets/categories/${name}.jpg`;
+    }
+    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600';
   }
-  return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600';
-}
 }

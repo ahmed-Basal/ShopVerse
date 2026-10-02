@@ -3,7 +3,7 @@ import { OrderItemModel } from './order-item.model';
 
 export interface OrderModel {
   _id: string;
-  user: UserModel;
+  user?: UserModel;
   cartItems: OrderItemModel[];
   taxPrice?: number;
   shippingAddress?: {

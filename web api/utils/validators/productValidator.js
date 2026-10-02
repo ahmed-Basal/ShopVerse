@@ -1,7 +1,7 @@
 const slugify = require("slugify");
 const { check, body } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
-const Category = require("../../models/categoryModel");
+const prisma = require("../../config/prismaClient");
 
 exports.createProductValidator = [
   check("title")
@@ -33,7 +33,7 @@ exports.createProductValidator = [
     .isNumeric()
     .withMessage("Product price must be a number")
     .isLength({ max: 32 })
-    .withMessage("To long price"),
+    .withMessage("Too long price"),
   check("priceAfterDiscount")
     .optional()
     .isNumeric()
@@ -57,11 +57,9 @@ exports.createProductValidator = [
     .withMessage("images should be array of string"),
   check("category")
     .notEmpty()
-    .withMessage("Product must be belong to a category")
-    .isMongoId()
-    .withMessage("Invalid ID formate")
+    .withMessage("Product must belong to a category")
     .custom((categoryId) =>
-      Category.findById(categoryId).then((category) => {
+      prisma.category.findUnique({ where: { id: categoryId } }).then((category) => {
         if (!category) {
           return Promise.reject(
             new Error(`No category for this id: ${categoryId}`),
@@ -70,7 +68,7 @@ exports.createProductValidator = [
       }),
     ),
 
-  check("brand").optional().isMongoId().withMessage("Invalid ID formate"),
+  check("brand").optional(),
   check("ratingsAverage")
     .optional()
     .isNumeric()
@@ -88,12 +86,12 @@ exports.createProductValidator = [
 ];
 
 exports.getProductValidator = [
-  check("id").isMongoId().withMessage("Invalid ID formate"),
+  check("id").notEmpty().withMessage("Invalid ID format"),
   validatorMiddleware,
 ];
 
 exports.updateProductValidator = [
-  check("id").isMongoId().withMessage("Invalid ID formate"),
+  check("id").notEmpty().withMessage("Invalid ID format"),
   body("title")
     .optional()
     .custom((val, { req }) => {
@@ -104,6 +102,6 @@ exports.updateProductValidator = [
 ];
 
 exports.deleteProductValidator = [
-  check("id").isMongoId().withMessage("Invalid ID formate"),
+  check("id").notEmpty().withMessage("Invalid ID format"),
   validatorMiddleware,
 ];

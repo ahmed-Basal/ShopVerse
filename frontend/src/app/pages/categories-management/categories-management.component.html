@@ -30,28 +30,21 @@
 
         <form [formGroup]="categoryForm" (ngSubmit)="submit()" class="modal-form">
           <div class="form-group">
-            <label for="name">Category Name</label>
-            <input id="name" type="text" formControlName="name" placeholder="Category Name" />
+            <label for="name">Category Name <span class="required-star">*</span></label>
+            <input id="name" type="text" formControlName="name" placeholder="e.g. Electronics, Clothing" />
             @if (categoryForm.get('name')?.touched && categoryForm.get('name')?.invalid) {
               <span class="error-text">Category name is required (min 3 chars).</span>
             }
           </div>
 
-          <div class="form-group">
-            <label for="categoryImage">Category Image</label>
-            <div class="file-upload-wrapper">
-              <input id="categoryImage" type="file" (change)="onCategoryImageChange($event)" accept="image/*" class="file-input" />
-              <div class="file-upload-preview">
-                @if (categoryImagePreview) {
-                  <img [src]="categoryImagePreview" alt="Category preview" class="preview-img" />
-                  <span class="change-text">Change Image</span>
-                } @else {
-                  <i class="pi pi-image upload-icon"></i>
-                  <span>Choose Category Cover Image</span>
-                }
-              </div>
-            </div>
-          </div>
+          <!-- Dual-Mode Image Uploader (Upload or URL) -->
+          <app-image-uploader
+            [label]="'Category Cover Image'"
+            [initialUrl]="categoryImageUrl"
+            [placeholder]="'https://images.unsplash.com/photo-1526738549149-8e07eca6c147'"
+            [hint]="'Upload a cover banner or paste a direct image URL link.'"
+            (imageChange)="onCategoryImageChange($event)"
+          ></app-image-uploader>
 
           <div class="form-actions">
             <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
@@ -93,7 +86,7 @@
           <div class="category-dashboard-card border-round-2xl overflow-hidden flex flex-column h-full">
             <!-- Category Banner/Image -->
             <div class="category-banner">
-              <img [src]="cat.image || './assets/categories/general.jpg'" [alt]="cat.name" class="category-banner-img" />
+              <img [src]="cat.image | imageUrl" [alt]="cat.name" class="category-banner-img" />
               <div class="category-banner-overlay"></div>
               
               @if (isAdmin) {
@@ -136,7 +129,7 @@
                     <div class="flex align-items-center gap-2">
                       <div class="sub-img-container flex align-items-center justify-content-center border-round-md">
                         @if (sub.image) {
-                          <img [src]="sub.image" [alt]="sub.name" class="sub-img" />
+                          <img [src]="sub.image | imageUrl" [alt]="sub.name" class="sub-img" />
                         } @else {
                           <i class="pi pi-image text-xs text-muted"></i>
                         }

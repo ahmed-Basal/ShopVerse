@@ -20,8 +20,9 @@ const categorySchema = new mongoose.Schema(
 );
 
 const setImageURL = (doc) => {
-  if (doc.image && !doc.image.startsWith("http")) {
-    const imageUrl = `${process.env.BASE_URL}/categories/${doc.image}`;
+  const baseUrl = process.env.BASE_URL || "http://localhost:8000";
+  if (doc.image && !doc.image.startsWith("http") && !doc.image.startsWith("data:")) {
+    const imageUrl = `${baseUrl}/categories/${doc.image}`;
     doc.image = imageUrl;
   }
 };

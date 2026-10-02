@@ -6,7 +6,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { RegisterRequestModel } from '../../core/models/auth/register-request.model';
 import { AuthService } from '../../core/service/auth.service';
@@ -17,9 +17,9 @@ import { SharedModule } from '../../shared/module/shared/shared.module';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [SharedModule],
+  imports: [SharedModule, RouterLink],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss',
+  styleUrls: [],
   encapsulation: ViewEncapsulation.None,
 })
 export class RegisterComponent {

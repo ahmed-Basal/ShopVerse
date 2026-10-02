@@ -1,86 +1,203 @@
-<div class="card">
-  <p-menubar [model]="items">
-    <ng-template pTemplate="start">
-      <figure class="my-0 mx-2 cursor-pointer" [routerLink]="['/home']">
-        <img class="w-2rem" src="./assets/logo.svg" alt="logo" />
-      </figure>
-    </ng-template>
+<nav class="fixed top-0 left-0 right-0 z-[9999] h-16 bg-ocean-900/95 backdrop-blur-md border-b border-ocean-500/40 shadow-card">
+  <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
 
-    <ng-template pTemplate="item" let-item let-root="root">
-      <a
-        [routerLink]="item?.['path']"
-        pRipple
-        class="flex align-items-center p-menuitem-link"
-      >
-        <span [class]="item.icon"></span>
-        <span class="ml-2">{{ item.label }}</span>
+    <!-- LEFT: Brand Logo & Main Nav Links -->
+    <div class="flex items-center gap-8">
+      <a routerLink="/home" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue to-cyan flex items-center justify-center shadow-blue transition-transform group-hover:scale-105">
+          <i class="pi pi-bolt text-white text-base"></i>
+        </div>
+        <span class="font-extrabold text-xl text-white tracking-tight bg-gradient-to-r from-white via-ocean-100 to-ocean-300 bg-clip-text text-transparent">
+          ShopVerse
+        </span>
       </a>
-    </ng-template>
 
-    <ng-template pTemplate="end">
-      <div class="card flex justify-content-center align-items-center gap-3">
-        <!-- Logged In Section -->
-        @if (isLoggedIn) {
-          <!-- Cart Icon -->
-          <a [routerLink]="['/cart']" class="p-2 flex align-items-center justify-content-center text-600 hover:text-900 transition-colors">
-            <i class="pi pi-shopping-cart text-2xl" pBadge [value]="cartCount > 0 ? cartCount.toString() : ''" severity="warning"></i>
-          </a>
+      <!-- Desktop Links -->
+      <div class="hidden md:flex items-center gap-1">
+        <a routerLink="/home" routerLinkActive="text-blue bg-blue-muted/60 font-semibold" [routerLinkActiveOptions]="{exact: true}"
+           class="px-3.5 py-1.5 rounded-lg text-sm text-ocean-300 hover:text-white hover:bg-ocean-700/60 transition-all">
+          Home
+        </a>
+        <a routerLink="/products" routerLinkActive="text-blue bg-blue-muted/60 font-semibold"
+           class="px-3.5 py-1.5 rounded-lg text-sm text-ocean-300 hover:text-white hover:bg-ocean-700/60 transition-all">
+          Products
+        </a>
+        <a routerLink="/categories" routerLinkActive="text-blue bg-blue-muted/60 font-semibold"
+           class="px-3.5 py-1.5 rounded-lg text-sm text-ocean-300 hover:text-white hover:bg-ocean-700/60 transition-all">
+          Categories
+        </a>
+        <a routerLink="/brands" routerLinkActive="text-blue bg-blue-muted/60 font-semibold"
+           class="px-3.5 py-1.5 rounded-lg text-sm text-ocean-300 hover:text-white hover:bg-ocean-700/60 transition-all">
+          Brands
+        </a>
+      </div>
+    </div>
 
-          <!-- Notifications Bell -->
-          <div class="relative">
-            <button type="button" class="btn-bell bg-transparent border-none cursor-pointer p-2 flex align-items-center justify-content-center text-600 hover:text-900 transition-colors" (click)="toggleNotifications(); $event.stopPropagation()">
-              <i class="pi pi-bell text-2xl" pBadge [value]="unreadNotificationsCount > 0 ? unreadNotificationsCount.toString() : ''" severity="danger"></i>
-            </button>
-            
-            <!-- Notifications Dropdown -->
-            @if (showNotificationsDropdown) {
-              <div class="notifications-dropdown border-1 border-200 border-round-xl bg-white shadow-3 p-3 absolute right-0 mt-2 z-5">
-                <div class="flex justify-content-between align-items-center border-bottom-1 border-200 pb-2 mb-2" style="width: 250px;">
-                  <span class="font-bold text-900">Notifications</span>
-                  @if (unreadNotificationsCount > 0) {
-                    <button type="button" class="btn-text text-primary text-xs font-semibold cursor-pointer border-none bg-transparent hover:underline" (click)="markNotificationsRead()">Mark as read</button>
-                  }
-                </div>
-                <div class="notifications-list flex flex-column gap-2 overflow-y-auto max-h-15rem">
-                  @if (notificationsList.length > 0) {
-                    @for (notif of notificationsList; track notif.id) {
-                      <div class="notif-item p-2 border-round-md" [class.unread]="!notif.read" style="background: rgba(249, 115, 22, 0.03);">
-                        <p class="text-sm text-800 m-0 font-medium line-height-3">{{ notif.message }}</p>
-                        <span class="text-xs text-500 block mt-1"><i class="pi pi-clock text-xs mr-1"></i>{{ notif.timestamp | date:'shortTime' }}</span>
-                      </div>
-                    }
-                  } @else {
-                    <div class="text-center py-4 text-color-secondary text-sm">
-                      No notifications yet.
+    <!-- RIGHT: Cart, Notifs, User Profile / Auth buttons -->
+    <div class="flex items-center gap-3">
+      <!-- Wishlist link (authenticated) -->
+      @if (isLoggedIn) {
+        <a routerLink="/wishlist" class="relative p-2 rounded-xl text-ocean-300 hover:text-red-400 hover:bg-ocean-700/70 transition-all" title="Wishlist">
+          <i class="pi pi-heart text-lg"></i>
+        </a>
+      }
+
+      <!-- Cart Icon with Cyan badge -->
+      <a routerLink="/cart" class="relative p-2 rounded-xl text-ocean-300 hover:text-cyan hover:bg-ocean-700/70 transition-all" title="Cart">
+        <i class="pi pi-shopping-cart text-lg"></i>
+        @if (cartCount > 0) {
+          <span class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-cyan text-ocean-950 text-xs font-bold rounded-full flex items-center justify-center shadow-cyan">
+            {{ cartCount }}
+          </span>
+        }
+      </a>
+
+      @if (isLoggedIn) {
+        <!-- Notifications Bell -->
+        <div class="relative">
+          <button (click)="toggleNotifications($event)"
+                  class="relative p-2 rounded-xl text-ocean-300 hover:text-white hover:bg-ocean-700/70 transition-all cursor-pointer"
+                  title="Notifications">
+            <i class="pi pi-bell text-lg"></i>
+            @if (unreadNotificationsCount > 0) {
+              <span class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {{ unreadNotificationsCount }}
+              </span>
+            }
+          </button>
+
+          <!-- Notifications Dropdown (High z-index) -->
+          @if (showNotificationsDropdown) {
+            <div (click)="$event.stopPropagation()"
+                 class="absolute right-0 mt-3 w-80 bg-ocean-800/98 backdrop-blur-xl border border-ocean-500/70 rounded-2xl shadow-card overflow-hidden z-[10000] animate-slide-down">
+              <div class="px-4 py-3 border-b border-ocean-500/40 flex items-center justify-between">
+                <span class="font-bold text-sm text-white">Notifications</span>
+                @if (unreadNotificationsCount > 0) {
+                  <button (click)="markNotificationsRead()" class="text-xs text-blue hover:underline cursor-pointer">
+                    Mark all read
+                  </button>
+                }
+              </div>
+              <div class="max-h-64 overflow-y-auto divide-y divide-ocean-600/40">
+                @if (notificationsList.length > 0) {
+                  @for (notif of notificationsList; track notif.id) {
+                    <div class="p-3 text-xs" [class.bg-ocean-700]="!notif.read">
+                      <p class="text-ocean-100 font-medium leading-relaxed">{{ notif.message }}</p>
+                      <span class="text-ocean-400 mt-1 block">{{ notif.timestamp | date:'shortTime' }}</span>
                     </div>
                   }
+                } @else {
+                  <div class="py-8 text-center text-xs text-ocean-300">
+                    No new notifications
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- User Profile Dropdown (Isolated on far right, high z-index overlay) -->
+        <div class="relative">
+          <button (click)="toggleUserMenu($event)"
+                  class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-ocean-800 border border-ocean-500/70 hover:border-blue/60 transition-all cursor-pointer shadow-sm group">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue to-cyan flex items-center justify-center text-white text-xs font-bold">
+              {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+            </div>
+            <span class="text-sm font-semibold text-ocean-100 max-w-[110px] truncate hidden sm:inline">
+              {{ username || 'Account' }}
+            </span>
+            <i class="pi pi-chevron-down text-xs text-ocean-300 transition-transform duration-200" [class.rotate-180]="showUserMenu"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          @if (showUserMenu) {
+            <div (click)="$event.stopPropagation()"
+                 class="absolute right-0 mt-3 w-64 bg-ocean-800/98 backdrop-blur-xl border border-ocean-500/80 rounded-2xl shadow-card overflow-hidden z-[10000] animate-slide-down">
+              <!-- User Info Header -->
+              <div class="px-4 py-3.5 border-b border-ocean-500/50 bg-ocean-900/60 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue to-cyan flex items-center justify-center text-white font-bold text-base shadow-blue">
+                  {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+                </div>
+                <div class="overflow-hidden">
+                  <p class="text-sm font-bold text-white truncate">{{ username || 'User' }}</p>
+                  <span class="inline-block px-2 py-0.5 mt-0.5 text-[11px] font-semibold uppercase tracking-wider rounded-md bg-blue/15 text-blue border border-blue/20">
+                    {{ userRole || 'Customer' }}
+                  </span>
                 </div>
               </div>
-            }
-          </div>
 
-          <!-- User Profile Dropdown -->
-          <div class="relative">
-            <a
-              (click)="logOut = !logOut; showNotificationsDropdown = false; $event.stopPropagation()"
-              class="user-name px-3 py-2 text-white bg-orange-400 font-bold capitalize border-round-lg cursor-pointer flex align-items-center gap-2 hover:bg-orange-500 transition-colors"
-            >
-              <i class="pi pi-user"></i>
-              <span>{{ username || 'Profile' }}</span>
-            </a>
+              <!-- Menu Items -->
+              <div class="p-2 space-y-1">
+                <a routerLink="/profile" (click)="closeUserMenu()"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-ocean-200 hover:text-white hover:bg-ocean-700/80 transition-colors">
+                  <i class="pi pi-user text-ocean-300"></i> My Profile
+                </a>
+                <a routerLink="/orders" (click)="closeUserMenu()"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-ocean-200 hover:text-white hover:bg-ocean-700/80 transition-colors">
+                  <i class="pi pi-box text-ocean-300"></i> My Orders
+                </a>
+                <a routerLink="/wishlist" (click)="closeUserMenu()"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-ocean-200 hover:text-white hover:bg-ocean-700/80 transition-colors">
+                  <i class="pi pi-heart text-ocean-300"></i> My Wishlist
+                </a>
 
-            @if (logOut) {
-              <a
-                (click)="logout(); $event.stopPropagation()"
-                class="logout py-2 px-4 text-white bg-orange-400 font-bold absolute flex align-items-center gap-2 hover:bg-orange-500 transition-colors"
-              >
-                <span>Logout</span>
-                <i class="pi pi-sign-out"></i>
-              </a>
-            }
-          </div>
+                @if (isAdmin) {
+                  <div class="pt-1 border-t border-ocean-600/40">
+                    <a routerLink="/dashboard" (click)="closeUserMenu()"
+                       class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold text-blue hover:text-white hover:bg-blue/20 transition-colors">
+                      <i class="pi pi-shield"></i> Admin Dashboard
+                    </a>
+                  </div>
+                }
+
+                <div class="pt-1 border-t border-ocean-600/40">
+                  <button (click)="logout()"
+                          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer text-left">
+                    <i class="pi pi-sign-out"></i> Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Guest Actions on Far Right -->
+        <div class="flex items-center gap-2">
+          <a routerLink="/login"
+             class="px-4 py-2 text-sm font-semibold text-ocean-200 hover:text-white hover:bg-ocean-800 rounded-xl transition-all">
+            Sign In
+          </a>
+          <a routerLink="/register"
+             class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue to-cyan rounded-xl hover:opacity-95 shadow-blue transition-all">
+            Sign Up
+          </a>
+        </div>
+      }
+
+      <!-- Mobile Hamburger Button -->
+      <button (click)="toggleMobileMenu()" class="md:hidden p-2 rounded-xl text-ocean-300 hover:text-white hover:bg-ocean-800 transition-all cursor-pointer">
+        <i class="pi" [class.pi-bars]="!mobileMenuOpen" [class.pi-times]="mobileMenuOpen"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  @if (mobileMenuOpen) {
+    <div class="md:hidden border-t border-ocean-500/40 bg-ocean-900/98 backdrop-blur-xl px-4 py-4 space-y-2 animate-slide-down">
+      <a routerLink="/home" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Home</a>
+      <a routerLink="/products" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Products</a>
+      <a routerLink="/categories" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Categories</a>
+      <a routerLink="/brands" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Brands</a>
+      @if (isLoggedIn) {
+        <a routerLink="/wishlist" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Wishlist</a>
+        <a routerLink="/orders" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-ocean-200 hover:bg-ocean-800">Orders</a>
+        @if (isAdmin) {
+          <a routerLink="/dashboard" (click)="closeMobileMenu()" class="block px-3 py-2 rounded-lg text-sm text-blue font-semibold hover:bg-ocean-800">Dashboard</a>
         }
-      </div>
-    </ng-template>
-  </p-menubar>
-</div>
+      }
+    </div>
+  }
+</nav>
+
+<!-- Navbar Spacer so page content starts cleanly below fixed navbar -->
+<div class="h-16"></div>

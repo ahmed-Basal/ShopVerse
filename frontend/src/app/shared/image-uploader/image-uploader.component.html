@@ -1,0 +1,178 @@
+<div class="image-uploader-container">
+  <!-- Top Label and Mode Switcher -->
+  <div class="uploader-header">
+    <label class="uploader-label">
+      {{ label }}
+      @if (required) {
+        <span class="required-star">*</span>
+      }
+    </label>
+
+    <div class="mode-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeMode === 'file'"
+        (click)="switchMode('file')"
+      >
+        <i class="pi pi-upload"></i>
+        <span>Upload File</span>
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeMode === 'url'"
+        (click)="switchMode('url')"
+      >
+        <i class="pi pi-link"></i>
+        <span>Image URL</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mode 1: File Dropzone -->
+  @if (activeMode === 'file') {
+    <div
+      class="dropzone-area"
+      [class.dragging]="isDragging"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        (change)="onFileInput($event)"
+        class="hidden-file-input"
+      />
+
+      @if (previewUrl && !imageLoadError) {
+        <div class="preview-box" (click)="$event.stopPropagation()">
+          <img
+            [src]="previewUrl | imageUrl"
+            alt="Preview"
+            class="preview-image"
+            (error)="onImgError()"
+          />
+          <div class="preview-overlay">
+            <button
+              type="button"
+              class="overlay-btn change-btn"
+              (click)="fileInput.click()"
+              title="Change Image"
+            >
+              <i class="pi pi-refresh"></i>
+              <span>Change</span>
+            </button>
+            <button
+              type="button"
+              class="overlay-btn remove-btn"
+              (click)="clear()"
+              title="Remove"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+        @if (selectedFile) {
+          <div class="file-meta">
+            <i class="pi pi-file text-accent"></i>
+            <span class="file-name">{{ selectedFile.name }}</span>
+            <span class="file-size">({{ (selectedFile.size / 1024).toFixed(1) }} KB)</span>
+          </div>
+        }
+      } @else {
+        <div class="dropzone-placeholder">
+          <div class="icon-circle">
+            <i class="pi pi-cloud-upload"></i>
+          </div>
+          <p class="drop-text">
+            <strong>Click to browse</strong> or drag & drop image here
+          </p>
+          <span class="drop-hint">PNG, JPG, WEBP, GIF up to 10MB</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Mode 2: URL Link Input -->
+  @if (activeMode === 'url') {
+    <div class="url-input-section">
+      <div class="url-input-wrapper">
+        <i class="pi pi-link input-icon"></i>
+        <input
+          type="url"
+          [(ngModel)]="enteredUrl"
+          (ngModelChange)="onUrlChange($event)"
+          [placeholder]="placeholder"
+          class="url-input"
+        />
+        @if (enteredUrl) {
+          <button
+            type="button"
+            class="clear-input-btn"
+            (click)="clear()"
+            title="Clear link"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+
+      <!-- URL Preview Box -->
+      @if (enteredUrl) {
+        <div class="url-preview-card">
+          @if (!imageLoadError) {
+            <div class="url-preview-img-box">
+              <img
+                [src]="enteredUrl"
+                alt="URL Preview"
+                (error)="onImgError()"
+                class="url-preview-img"
+              />
+              <div class="url-badge-success">
+                <i class="pi pi-check-circle"></i> Valid Image Link
+              </div>
+            </div>
+            <div class="url-actions">
+              <button
+                type="button"
+                class="btn-copy-link"
+                (click)="copyLink()"
+                title="Copy link"
+              >
+                <i class="pi" [ngClass]="copied ? 'pi-check' : 'pi-copy'"></i>
+                <span>{{ copied ? 'Copied!' : 'Copy Link' }}</span>
+              </button>
+              <a
+                [href]="enteredUrl"
+                target="_blank"
+                rel="noopener"
+                class="btn-open-link"
+                title="Open image in new tab"
+              >
+                <i class="pi pi-external-link"></i>
+                <span>View Full</span>
+              </a>
+            </div>
+          } @else {
+            <div class="url-error-box">
+              <i class="pi pi-exclamation-triangle error-icon"></i>
+              <div class="error-details">
+                <strong>Cannot load image from this URL</strong>
+                <span>Please ensure the link is a direct, public image URL (ending with .jpg, .png, etc.).</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (hint) {
+    <span class="uploader-hint">{{ hint }}</span>
+  }
+</div>

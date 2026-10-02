@@ -13,12 +13,12 @@
           <!-- Cart Items List -->
           <div class="col-12 lg:col-8">
             <div class="flex flex-column gap-3">
-              @for (item of cartItems; track item._id) {
+              @for (item of cartItems; track (item.id || item._id)) {
                 <div class="cart-item-card flex flex-column sm:flex-row align-items-center p-4 gap-3 border-1 border-200 border-round-2xl bg-white shadow-1 transition-all">
                   <!-- Product Image -->
                   <div class="w-10rem h-10rem overflow-hidden border-round-xl bg-100 flex align-items-center justify-content-center">
                     @if (item.product?.imageCover) {
-                      <img [src]="item.product.imageCover" [alt]="item.product.title" class="w-full h-full object-cover" />
+                      <img #cartImg [src]="item.product.imageCover | imageUrl" (error)="cartImg.src = '/assets/product-1.jpg'" [alt]="item.product.title" class="w-full h-full object-cover" />
                     } @else {
                       <i class="pi pi-image text-color-secondary text-2xl"></i>
                     }
@@ -28,7 +28,7 @@
                   <div class="flex flex-column sm:flex-row justify-content-between align-items-stretch flex-1 gap-3">
                     <div class="flex flex-column justify-content-between">
                       <div>
-                        <span class="text-xs font-bold text-500 uppercase">{{ item.product?.category || 'General' }}</span>
+                        <span class="text-xs font-bold text-500 uppercase">{{ item.product?.category?.name || item.product?.category || 'General' }}</span>
                         <h3 class="text-lg font-bold text-900 mt-1 mb-2">{{ item.product?.title || 'Unknown Product' }}</h3>
                         @if (item.color) {
                           <span class="inline-block px-2 py-1 text-xs font-semibold text-color-secondary bg-100 border-round-md">Color: {{ item.color }}</span>
@@ -37,11 +37,11 @@
                       
                       <!-- Quantity Adjuster -->
                       <div class="flex align-items-center gap-3 mt-3">
-                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" [disabled]="item.quantity <= 1" (click)="updateQuantity(item._id, item.quantity, false)">
+                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" [disabled]="item.quantity <= 1" (click)="updateQuantity(item.id || item._id, item.quantity, false)">
                           <i class="pi pi-minus text-xs"></i>
                         </button>
                         <span class="font-bold text-900">{{ item.quantity }}</span>
-                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" (click)="updateQuantity(item._id, item.quantity, true)">
+                        <button type="button" class="btn-qty flex align-items-center justify-content-center border-circle border-1 border-200 bg-50 cursor-pointer" (click)="updateQuantity(item.id || item._id, item.quantity, true)">
                           <i class="pi pi-plus text-xs"></i>
                         </button>
                       </div>
@@ -51,7 +51,7 @@
                     <div class="flex flex-column justify-content-between align-items-end text-right">
                       <span class="text-xl font-bold text-900">$ {{ (item.price * item.quantity).toFixed(2) }}</span>
                       
-                      <button type="button" class="btn-danger-icon" (click)="removeItem(item._id)" title="Remove item">
+                      <button type="button" class="btn-danger-icon" (click)="removeItem(item.id || item._id)" title="Remove item">
                         <i class="pi pi-trash"></i>
                       </button>
                     </div>

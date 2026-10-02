@@ -1,15 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { MenuItem } from 'primeng/api';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
-import { InputTextModule } from 'primeng/inputtext';
-import { MenubarModule } from 'primeng/menubar';
-import { RippleModule } from 'primeng/ripple';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../core/service/cart.service';
 import { UserDataService } from '../../core/service/user-data.service';
-import { AuthService } from './../../core/service/auth.service';
+import { AuthService } from '../../core/service/auth.service';
 import { NotificationService } from '../../core/service/notification.service';
 import { NotificationModel } from '../../core/models/notification/notification.model';
 
@@ -17,27 +11,24 @@ import { NotificationModel } from '../../core/models/notification/notification.m
   selector: 'app-user-nav',
   standalone: true,
   imports: [
-    MenubarModule,
-    BadgeModule,
-    AvatarModule,
-    InputTextModule,
-    RippleModule,
     CommonModule,
     RouterLink,
+    RouterLinkActive,
   ],
   templateUrl: './user-nav.component.html',
-  styleUrl: './user-nav.component.scss',
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: [],
 })
 export class UserNavComponent implements OnInit {
-  items: MenuItem[] | undefined;
-  logOut: boolean = false;
   username: string = '';
+  userRole: string = '';
+  isAdmin: boolean = false;
   cartCount: number = 0;
   isLoggedIn: boolean = false;
   unreadNotificationsCount: number = 0;
   notificationsList: NotificationModel[] = [];
   showNotificationsDropdown: boolean = false;
+  showUserMenu: boolean = false;
+  mobileMenuOpen: boolean = false;
 
   constructor(
     private _userData: UserDataService,
@@ -47,17 +38,21 @@ export class UserNavComponent implements OnInit {
     private router: Router
   ) {}
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(): void {
+    this.showUserMenu = false;
+    this.showNotificationsDropdown = false;
+  }
+
   ngOnInit() {
     this.getUserName();
     this.getUserCartCount();
-    
-    // Subscribe to dynamic auth state
+
     this._auth.isLoggedIn$.subscribe((loggedIn) => {
       this.isLoggedIn = loggedIn;
-      this.buildMenu();
+      this.syncUserRole();
     });
 
-    // Subscribe to real-time notification badge counter
     this._notification.unreadCount$.subscribe((count) => {
       this.unreadNotificationsCount = count;
     });
@@ -67,54 +62,17 @@ export class UserNavComponent implements OnInit {
     });
   }
 
-  buildMenu(): void {
-    const baseItems: MenuItem[] = [
-      {
-        label: 'Home',
-        icon: 'pi pi-home',
-        path: 'home',
-      },
-      {
-        label: 'Products',
-        icon: 'pi pi-sparkles',
-        path: 'products',
-      },
-      {
-        label: 'Categories',
-        icon: 'pi pi-th-large',
-        path: 'categories',
-      },
-    ];
-
-    if (this.isLoggedIn) {
-      this.items = [
-        ...baseItems,
-        {
-          label: 'Profile',
-          icon: 'pi pi-user',
-          path: 'profile',
-        },
-      ];
-    } else {
-      this.items = [
-        ...baseItems,
-        {
-          label: 'Login',
-          icon: 'pi pi-sign-in',
-          path: 'login',
-        },
-        {
-          label: 'Register',
-          icon: 'pi pi-user-plus',
-          path: 'register',
-        },
-      ];
+  syncUserRole(): void {
+    if (typeof window !== 'undefined') {
+      this.userRole = localStorage.getItem('userRole') || 'customer';
+      this.isAdmin = this.userRole === 'admin' || this.userRole === 'manager';
     }
   }
 
   getUserName(): void {
     this._userData.userName.subscribe((next) => {
-      this.username = next || typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '';
+      this.username = next || (typeof window !== 'undefined' ? localStorage.getItem('username') || '' : '');
+      this.syncUserRole();
     });
   }
 
@@ -122,11 +80,32 @@ export class UserNavComponent implements OnInit {
     this._cart.countOfCart.subscribe((next) => (this.cartCount = next));
   }
 
-  toggleNotifications(): void {
+  toggleUserMenu(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) {
+      this.showNotificationsDropdown = false;
+    }
+  }
+
+  closeUserMenu(): void {
+    this.showUserMenu = false;
+  }
+
+  toggleNotifications(event?: Event): void {
+    if (event) event.stopPropagation();
     this.showNotificationsDropdown = !this.showNotificationsDropdown;
     if (this.showNotificationsDropdown) {
-      this.logOut = false; // Close user menu
+      this.showUserMenu = false;
     }
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
   }
 
   markNotificationsRead(): void {
@@ -135,7 +114,9 @@ export class UserNavComponent implements OnInit {
 
   logout(): void {
     this.showNotificationsDropdown = false;
-    this.logOut = false;
+    this.showUserMenu = false;
+    this.mobileMenuOpen = false;
     this._auth.logout();
+    this.router.navigate(['/login']);
   }
 }

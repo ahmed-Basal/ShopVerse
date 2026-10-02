@@ -34,21 +34,14 @@
         <textarea id="description" formControlName="description" placeholder="Enter optional description" rows="3"></textarea>
       </div>
 
-      <div class="form-group">
-        <label for="image">Subcategory Image/Icon (Optional)</label>
-        <div class="file-upload-wrapper">
-          <input id="image" type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" />
-          <div class="file-upload-preview">
-            @if (imagePreview) {
-              <img [src]="imagePreview" alt="Subcategory preview" class="preview-img" />
-              <span class="change-text">Change Image</span>
-            } @else {
-              <i class="pi pi-image upload-icon"></i>
-              <span>Choose an Image</span>
-            }
-          </div>
-        </div>
-      </div>
+      <!-- Dual-Mode Image Uploader -->
+      <app-image-uploader
+        [label]="'Subcategory Image/Icon (Optional)'"
+        [initialUrl]="imageUrl"
+        [placeholder]="'https://images.unsplash.com/photo-1542291026-7eec264c27ff'"
+        [hint]="'Upload a thumbnail icon or paste an image URL link.'"
+        (imageChange)="onImageChange($event)"
+      ></app-image-uploader>
 
       <div class="form-actions">
         <button type="button" class="btn-secondary px-4 py-2" (click)="cancel()">Cancel</button>

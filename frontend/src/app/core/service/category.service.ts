@@ -16,6 +16,10 @@ export class CategoryService {
     return this._HttpClient.get<CategoryListResponseModel>(API_ENDPOINTS.CATEGORIES);
   }
 
+  getCategories(): Observable<CategoryListResponseModel> {
+    return this.getAllCategory();
+  }
+
   getSpecificCategory(typeCategory: string): Observable<ProductListResponseModel> {
     // Rely directly on the backend's ?categoryName filter support on products route
     return this._HttpClient.get<ProductListResponseModel>(API_ENDPOINTS.PRODUCTS, {

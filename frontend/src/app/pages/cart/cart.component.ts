@@ -9,11 +9,12 @@ import { NotifecationsService } from '../../core/service/notifecations.service';
 import { CheckoutFormComponent } from '../../shared/checkout-form/checkout-form.component';
 
 import { FormsModule } from '@angular/forms';
+import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [DataViewModule, ButtonModule, TagModule, CommonModule, CheckoutFormComponent, RouterLink, FormsModule],
+  imports: [DataViewModule, ButtonModule, TagModule, CommonModule, CheckoutFormComponent, RouterLink, FormsModule, ImageUrlPipe],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })

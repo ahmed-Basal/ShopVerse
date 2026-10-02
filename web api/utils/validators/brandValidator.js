@@ -3,7 +3,7 @@ const { check, body } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 
 exports.getBrandValidator = [
-  check("id").isMongoId().withMessage("Invalid Brand id format"),
+  check("id").notEmpty().withMessage("Invalid Brand id format"),
   validatorMiddleware,
 ];
 
@@ -23,7 +23,7 @@ exports.createBrandValidator = [
 ];
 
 exports.updateBrandValidator = [
-  check("id").isMongoId().withMessage("Invalid Brand id format"),
+  check("id").notEmpty().withMessage("Invalid Brand id format"),
   body("name")
     .optional()
     .custom((val, { req }) => {
@@ -34,6 +34,6 @@ exports.updateBrandValidator = [
 ];
 
 exports.deleteBrandValidator = [
-  check("id").isMongoId().withMessage("Invalid Brand id format"),
+  check("id").notEmpty().withMessage("Invalid Brand id format"),
   validatorMiddleware,
 ];

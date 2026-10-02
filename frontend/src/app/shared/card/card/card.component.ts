@@ -9,11 +9,12 @@ import { WishlistService } from '../../../core/service/wishlist.service';
 import { AuthService } from '../../../core/service/auth.service';
 import { NotifecationsService } from '../../../core/service/notifecations.service';
 import { EmptyComponent } from '../../empty/empty.component';
+import { ImageUrlPipe } from '../../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-card',
   standalone: true,
-  imports: [NgClass, CommonModule, ButtonModule, RouterLink, MessagesModule, EmptyComponent],
+  imports: [NgClass, CommonModule, ButtonModule, RouterLink, MessagesModule, EmptyComponent, ImageUrlPipe],
   templateUrl: './card.component.html',
   styleUrl: './card.component.scss',
 })

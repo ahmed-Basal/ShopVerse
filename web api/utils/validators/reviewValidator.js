@@ -1,6 +1,6 @@
-const { check, body } = require("express-validator");
+const { check } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
-const Review = require("../../models/reviewModel");
+const prisma = require("../../config/prismaClient");
 
 exports.createReviewValidator = [
   check("title").optional(),
@@ -9,41 +9,40 @@ exports.createReviewValidator = [
     .withMessage("ratings value required")
     .isFloat({ min: 1, max: 5 })
     .withMessage("Ratings value must be between 1 to 5"),
-  check("user").isMongoId().withMessage("Invalid Review id format"),
+  check("user").notEmpty().withMessage("Invalid Review user id format"),
   check("product")
-    .isMongoId()
-    .withMessage("Invalid Review id format")
+    .notEmpty()
+    .withMessage("Invalid Review product id format")
     .custom((val, { req }) =>
-      Review.findOne({ user: req.user._id, product: req.body.product }).then(
-        (review) => {
-          console.log(review);
-          if (review) {
-            return Promise.reject(
-              new Error("You already created a review before"),
-            );
-          }
-        },
-      ),
+      prisma.review.findFirst({
+        where: { userId: req.user.id, productId: req.body.product },
+      }).then((review) => {
+        if (review) {
+          return Promise.reject(
+            new Error("You already created a review before"),
+          );
+        }
+      }),
     ),
   validatorMiddleware,
 ];
 
 exports.getReviewValidator = [
-  check("id").isMongoId().withMessage("Invalid Review id format"),
+  check("id").notEmpty().withMessage("Invalid Review id format"),
   validatorMiddleware,
 ];
 
 exports.updateReviewValidator = [
   check("id")
-    .isMongoId()
+    .notEmpty()
     .withMessage("Invalid Review id format")
     .custom((val, { req }) =>
-      Review.findById(val).then((review) => {
+      prisma.review.findUnique({ where: { id: val } }).then((review) => {
         if (!review) {
           return Promise.reject(new Error(`There is no review with id ${val}`));
         }
 
-        if (review.user._id.toString() !== req.user._id.toString()) {
+        if (review.userId !== req.user.id) {
           return Promise.reject(
             new Error(`Your are not allowed to perform this action`),
           );
@@ -55,17 +54,17 @@ exports.updateReviewValidator = [
 
 exports.deleteReviewValidator = [
   check("id")
-    .isMongoId()
+    .notEmpty()
     .withMessage("Invalid Review id format")
     .custom((val, { req }) => {
       if (req.user.role === "user") {
-        return Review.findById(val).then((review) => {
+        return prisma.review.findUnique({ where: { id: val } }).then((review) => {
           if (!review) {
             return Promise.reject(
               new Error(`There is no review with id ${val}`),
             );
           }
-          if (review.user._id.toString() !== req.user._id.toString()) {
+          if (review.userId !== req.user.id) {
             return Promise.reject(
               new Error(`Your are not allowed to perform this action`),
             );

@@ -10,11 +10,12 @@ import { NotifecationsService } from '../../core/service/notifecations.service';
 import { ProductModel } from '../../core/models/products/product.model';
 import { RawProductModel } from '../../core/models/products/raw-product.model';
 import { OrderModel } from '../../core/models/orders/order.model';
+import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ImageUrlPipe],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })

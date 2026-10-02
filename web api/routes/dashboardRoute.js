@@ -1,10 +1,7 @@
 const express = require("express");
 const asyncHandler = require("express-async-handler");
-const User = require("../models/userModel");
-const Product = require("../models/productModel");
-const Order = require("../models/orderModel");
-const Category = require("../models/categoryModel");
 const authService = require("../services/authService");
+const prisma = require("../config/prismaClient");
 
 const router = express.Router();
 
@@ -16,21 +13,25 @@ router.get(
   asyncHandler(async (req, res) => {
     const [usersCount, productsCount, ordersCount, categoriesCount] =
       await Promise.all([
-        User.countDocuments(),
-        Product.countDocuments(),
-        Order.countDocuments(),
-        Category.countDocuments(),
+        prisma.user.count(),
+        prisma.product.count(),
+        prisma.order.count(),
+        prisma.category.count(),
       ]);
 
-    const recentOrders = await Order.find()
-      .sort("-createdAt")
-      .limit(10)
-      .populate("user", "name email");
+    const recentOrders = await prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        user: { select: { name: true, email: true } },
+        orderItems: { include: { product: { select: { title: true } } } },
+      },
+    });
 
-    const totalRevenue = await Order.aggregate([
-      { $match: { isPaid: true } },
-      { $group: { _id: null, total: { $sum: "$totalOrderPrice" } } },
-    ]);
+    const revenueResult = await prisma.order.aggregate({
+      where: { isPaid: true },
+      _sum: { totalOrderPrice: true },
+    });
 
     res.status(200).json({
       status: "success",
@@ -39,7 +40,7 @@ router.get(
         productsCount,
         ordersCount,
         categoriesCount,
-        totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
+        totalRevenue: revenueResult._sum.totalOrderPrice || 0,
         recentOrders,
       },
     });

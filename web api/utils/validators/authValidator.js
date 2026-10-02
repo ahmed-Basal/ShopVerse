@@ -1,7 +1,7 @@
 const slugify = require("slugify");
 const { check } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
-const User = require("../../models/userModel");
+const prisma = require("../../config/prismaClient");
 
 exports.signupValidator = [
   check("name")
@@ -20,9 +20,9 @@ exports.signupValidator = [
     .isEmail()
     .withMessage("Invalid email address")
     .custom((val) =>
-      User.findOne({ email: val }).then((user) => {
+      prisma.user.findUnique({ where: { email: val } }).then((user) => {
         if (user) {
-          return Promise.reject(new Error("E-mail already in user"));
+          return Promise.reject(new Error("E-mail already in use"));
         }
       }),
     ),

@@ -46,7 +46,7 @@
                       <div class="col-12 md:col-6 lg:col-4">
                         <div class="fav-card p-3 border-round-xl border-1 border-200 shadow-1 flex flex-column justify-content-between h-full hover:shadow-2 transition-all">
                           <div class="text-center mb-3">
-                            <img [src]="item.imageCover" [alt]="item.title" class="w-full h-8rem object-cover border-round-lg mb-2" />
+                            <img #favImg [src]="item.imageCover | imageUrl" (error)="favImg.src = './assets/product-1.jpg'" [alt]="item.title" class="w-full h-8rem object-cover border-round-lg mb-2" />
                             <h4 class="font-bold text-900 m-0 text-ellipsis">{{ item.title }}</h4>
                             <span class="text-primary font-bold text-sm block mt-1">$ {{ item.price }}</span>
                           </div>
@@ -214,14 +214,14 @@
                           @for (item of order.cartItems; track item._id) {
                             <div class="flex align-items-center gap-3">
                               <div class="w-3rem h-3rem overflow-hidden border-round-md bg-100 flex align-items-center justify-content-center">
-                                @if (item.product?.imageCover) {
-                                  <img [src]="item.product.imageCover" [alt]="item.product?.title" class="w-full h-full object-cover" />
+                                @if (item.product.imageCover) {
+                                  <img #orderImg [src]="item.product.imageCover | imageUrl" (error)="orderImg.src = './assets/product-1.jpg'" [alt]="item.product.title" class="w-full h-full object-cover" />
                                 } @else {
                                   <i class="pi pi-image text-400"></i>
                                 }
                               </div>
                               <div class="flex-1">
-                                <h5 class="font-bold text-900 m-0 text-sm">{{ item.product?.title || 'Product Item' }}</h5>
+                                <h5 class="font-bold text-900 m-0 text-sm">{{ item.product.title || 'Product Item' }}</h5>
                                 @if (item.color) {
                                   <span class="text-xs text-color-secondary">Color: {{ item.color }}</span>
                                 }

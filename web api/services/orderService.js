@@ -1,116 +1,135 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const asyncHandler = require("express-async-handler");
-const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
-
-const User = require("../models/userModel");
-const Product = require("../models/productModel");
-const Cart = require("../models/cartModel");
-const Order = require("../models/orderModel");
+const prisma = require("../config/prismaClient");
 
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
   const taxPrice = 0;
   const shippingPrice = 0;
 
-  const cart = await Cart.findById(req.params.cartId);
-  if (!cart) {
-    return next(
-      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404),
-    );
-  }
+  const cart = await prisma.cart.findUnique({
+    where: { id: req.params.cartId },
+    include: { cartItems: { include: { product: true } } },
+  });
+  if (!cart) return next(new ApiError(`There is no such cart with id ${req.params.cartId}`, 404));
 
-  const cartPrice = cart.totalPriceAfterDiscount
-    ? cart.totalPriceAfterDiscount
-    : cart.totalCartPrice;
-
+  const cartPrice = cart.totalPriceAfterDiscount ?? cart.totalCartPrice;
   const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
 
-  const order = await Order.create({
-    user: req.user._id,
-    cartItems: cart.cartItems,
-    shippingAddress: req.body.shippingAddress,
-    totalOrderPrice,
+  const order = await prisma.order.create({
+    data: {
+      userId: req.user.id,
+      totalOrderPrice,
+      shippingDetails: req.body.shippingAddress?.details || null,
+      shippingPhone: req.body.shippingAddress?.phone || null,
+      shippingCity: req.body.shippingAddress?.city || null,
+      shippingPostalCode: req.body.shippingAddress?.postalCode || null,
+      orderItems: {
+        create: cart.cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          color: item.color,
+          price: item.price,
+        })),
+      },
+    },
+    include: { orderItems: { include: { product: true } }, user: true },
   });
 
-  if (order) {
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product._id || item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
+  // Update product quantity/sold
+  await Promise.all(
+    cart.cartItems.map((item) =>
+      prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          quantity: { decrement: item.quantity },
+          sold: { increment: item.quantity },
+        },
+      })
+    )
+  );
 
-    await Cart.findByIdAndDelete(req.params.cartId);
-  }
+  // Delete cart
+  await prisma.cart.delete({ where: { id: req.params.cartId } });
 
   res.status(201).json({ status: "success", data: order });
 });
 
 exports.filterOrderForLoggedUser = asyncHandler(async (req, res, next) => {
-  if (req.user.role === "user") req.filterObj = { user: req.user._id };
+  if (req.user.role === "user") req.filterObj = { userId: req.user.id };
   next();
 });
 
-exports.findAllOrders = factory.getAll(Order);
+exports.findAllOrders = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 50;
+  const skip = (page - 1) * limit;
+  const where = req.filterObj || {};
 
-exports.findSpecificOrder = factory.getOne(Order);
+  const [total, orders] = await Promise.all([
+    prisma.order.count({ where }),
+    prisma.order.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true, email: true, phone: true, profileImg: true } },
+        orderItems: { include: { product: { select: { title: true, imageCover: true } } } },
+      },
+    }),
+  ]);
+
+  const paginationResult = { currentPage: page, limit, numberOfPages: Math.ceil(total / limit) };
+  res.status(200).json({ results: orders.length, paginationResult, data: orders });
+});
+
+exports.findSpecificOrder = asyncHandler(async (req, res, next) => {
+  const order = await prisma.order.findUnique({
+    where: { id: req.params.id },
+    include: {
+      user: { select: { name: true, email: true, phone: true, profileImg: true } },
+      orderItems: { include: { product: { select: { title: true, imageCover: true } } } },
+    },
+  });
+  if (!order) return next(new ApiError(`No order for this id ${req.params.id}`, 404));
+  res.status(200).json({ data: order });
+});
 
 exports.updateOrderToPaid = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return next(
-      new ApiError(
-        `There is no such a order with this id:${req.params.id}`,
-        404,
-      ),
-    );
+  try {
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: { isPaid: true, paidAt: new Date() },
+    });
+    res.status(200).json({ status: "success", data: order });
+  } catch (err) {
+    if (err.code === "P2025") return next(new ApiError(`No order for this id ${req.params.id}`, 404));
+    throw err;
   }
-
-  order.isPaid = true;
-  order.paidAt = Date.now();
-
-  const updatedOrder = await order.save();
-
-  res.status(200).json({ status: "success", data: updatedOrder });
 });
 
 exports.updateOrderToDelivered = asyncHandler(async (req, res, next) => {
-  const order = await Order.findById(req.params.id);
-  if (!order) {
-    return next(
-      new ApiError(
-        `There is no such a order with this id:${req.params.id}`,
-        404,
-      ),
-    );
+  try {
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data: { isDelivered: true, deliveredAt: new Date() },
+    });
+    res.status(200).json({ status: "success", data: order });
+  } catch (err) {
+    if (err.code === "P2025") return next(new ApiError(`No order for this id ${req.params.id}`, 404));
+    throw err;
   }
-
-  order.isDelivered = true;
-  order.deliveredAt = Date.now();
-
-  const updatedOrder = await order.save();
-
-  res.status(200).json({ status: "success", data: updatedOrder });
 });
 
 exports.checkoutSession = asyncHandler(async (req, res, next) => {
-  const taxPrice = 0;
-  const shippingPrice = 0;
+  const cart = await prisma.cart.findUnique({
+    where: { id: req.params.cartId },
+    include: { cartItems: { include: { product: true } } },
+  });
+  if (!cart) return next(new ApiError(`There is no such cart with id ${req.params.cartId}`, 404));
 
-  const cart = await Cart.findById(req.params.cartId);
-  if (!cart) {
-    return next(
-      new ApiError(`There is no such cart with id ${req.params.cartId}`, 404),
-    );
-  }
-
-  const cartPrice = cart.totalPriceAfterDiscount
-    ? cart.totalPriceAfterDiscount
-    : cart.totalCartPrice;
-
-  const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
-
+  const cartPrice = cart.totalPriceAfterDiscount ?? cart.totalCartPrice;
   const discountRatio = cart.totalPriceAfterDiscount
     ? cart.totalPriceAfterDiscount / cart.totalCartPrice
     : 1;
@@ -147,59 +166,75 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
 const createCardOrder = async (session) => {
   const cartId = session.client_reference_id;
   const shippingAddress = session.metadata;
-  const oderPrice = session.amount_total / 100;
+  const orderPrice = session.amount_total / 100;
 
-  const cart = await Cart.findById(cartId);
-  const user = await User.findOne({ email: session.customer_email });
+  const cart = await prisma.cart.findUnique({
+    where: { id: cartId },
+    include: { cartItems: { include: { product: true } } },
+  });
+  const user = await prisma.user.findFirst({ where: { email: session.customer_email } });
 
-  const order = await Order.create({
-    user: user._id,
-    cartItems: cart.cartItems,
-    shippingAddress,
-    totalOrderPrice: oderPrice,
-    isPaid: true,
-    paidAt: Date.now(),
-    paymentMethodType: "card",
+  if (!cart || !user) return;
+
+  const order = await prisma.order.create({
+    data: {
+      userId: user.id,
+      totalOrderPrice: orderPrice,
+      isPaid: true,
+      paidAt: new Date(),
+      paymentMethodType: "card",
+      shippingDetails: shippingAddress?.details || null,
+      shippingPhone: shippingAddress?.phone || null,
+      shippingCity: shippingAddress?.city || null,
+      orderItems: {
+        create: cart.cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          color: item.color,
+          price: item.price,
+        })),
+      },
+    },
   });
 
-  if (order) {
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product._id || item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
+  await Promise.all(
+    cart.cartItems.map((item) =>
+      prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          quantity: { decrement: item.quantity },
+          sold: { increment: item.quantity },
+        },
+      })
+    )
+  );
 
-    await Cart.findByIdAndDelete(cartId);
+  await prisma.cart.delete({ where: { id: cartId } });
 
-    try {
-      const notificationService = require("./notificationService");
-      notificationService.sendNotificationToUser(user._id, {
-        orderId: order._id,
-        totalPrice: order.totalOrderPrice,
-        message: `Welcome to our store community! Your payment of EGP ${order.totalOrderPrice} was successful. Order #${order._id} is confirmed. We are thrilled to have you with us!`,
-      });
-    } catch (err) {
-      console.error("Error sending SSE notification:", err);
-    }
+  try {
+    const notificationService = require("./notificationService");
+    notificationService.sendNotificationToUser(user.id, {
+      orderId: order.id,
+      totalPrice: order.totalOrderPrice,
+      message: `Your payment of EGP ${order.totalOrderPrice} was successful. Order #${order.id} is confirmed.`,
+    });
+  } catch (err) {
+    console.error("Error sending SSE notification:", err);
   }
 };
 
 exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   const sig = req.headers["stripe-signature"];
-
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET,
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    if (process.env.NODE_ENV === "development" || !process.env.STRIPE_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET === "whsec_replace_me") {
-      console.warn("Stripe signature verification failed, falling back to parsing raw request payload for local dev:", err.message);
+    if (
+      process.env.NODE_ENV === "development" ||
+      !process.env.STRIPE_WEBHOOK_SECRET ||
+      process.env.STRIPE_WEBHOOK_SECRET === "whsec_replace_me"
+    ) {
       try {
         event = JSON.parse(req.body.toString());
       } catch (jsonErr) {
@@ -209,6 +244,7 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
   }
+
   if (event.type === "checkout.session.completed") {
     createCardOrder(event.data.object || event.data);
   }

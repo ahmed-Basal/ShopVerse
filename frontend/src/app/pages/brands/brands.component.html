@@ -1,0 +1,73 @@
+<div class="min-h-screen py-10 max-w-7xl mx-auto px-4">
+  <!-- Header Banner -->
+  <div class="mb-10 text-center max-w-2xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue/10 border border-blue/30 text-blue text-xs font-bold uppercase tracking-wider mb-3">
+      <i class="pi pi-tags text-cyan"></i> Official Partners
+    </div>
+    <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+      Explore All <span class="bg-gradient-to-r from-blue to-cyan bg-clip-text text-transparent">Brands</span>
+    </h1>
+    <p class="text-ocean-300 text-sm md:text-base mt-2">
+      Browse top-tier global brands, verified designers, and tech pioneers in our catalog.
+    </p>
+
+    <!-- Search Bar -->
+    <div class="relative max-w-md mx-auto mt-6">
+      <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-ocean-400 text-sm"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        placeholder="Filter brands by name..."
+        class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-ocean-800 border border-ocean-500/70 text-ocean-100 placeholder-ocean-400 focus:outline-none focus:border-blue transition-all"
+      />
+    </div>
+  </div>
+
+  <!-- States -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3">
+      <i class="pi pi-spin pi-spinner text-4xl text-blue"></i>
+      <p class="text-sm text-ocean-300">Loading brands directory...</p>
+    </div>
+  } @else if (error) {
+    <div class="max-w-md mx-auto p-6 rounded-2xl bg-ocean-800 border border-red-500/30 text-center">
+      <i class="pi pi-exclamation-triangle text-3xl text-red-400 mb-2"></i>
+      <p class="text-sm text-ocean-200 mb-4">{{ error }}</p>
+      <button (click)="fetchBrands()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-blue text-white hover:bg-blue-hover">
+        Retry
+      </button>
+    </div>
+  } @else if (filteredBrands.length === 0) {
+    <div class="max-w-md mx-auto p-8 rounded-2xl bg-ocean-800/60 border border-ocean-500/50 text-center">
+      <i class="pi pi-tag text-3xl text-ocean-400 mb-2"></i>
+      <h3 class="text-base font-bold text-white mb-1">No brands matched</h3>
+      <p class="text-xs text-ocean-300">Try changing your search keywords.</p>
+    </div>
+  } @else {
+    <!-- Brand Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+      @for (brand of filteredBrands; track brand._id) {
+        <a [routerLink]="['/brands', brand._id]"
+           class="group flex flex-col items-center p-5 rounded-2xl bg-ocean-800 border border-ocean-500/50 hover:border-blue/50 hover:bg-ocean-700/80 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 text-center">
+          <!-- Logo container -->
+          <div class="w-16 h-16 rounded-xl bg-white p-2.5 flex items-center justify-center mb-3 shadow-sm group-hover:scale-105 transition-transform duration-300">
+            @if (brand.image) {
+              <img [src]="brand.image" [alt]="brand.name" class="max-h-full max-w-full object-contain" />
+            } @else {
+              <i class="pi pi-tag text-ocean-700 text-xl"></i>
+            }
+          </div>
+          <!-- Brand Name -->
+          <span class="text-sm font-bold text-ocean-100 group-hover:text-blue transition-colors line-clamp-1">
+            {{ brand.name }}
+          </span>
+          <span class="text-[11px] text-ocean-400 mt-1 flex items-center gap-1 group-hover:text-cyan transition-colors">
+            <span>Explore</span>
+            <i class="pi pi-arrow-right text-[9px]"></i>
+          </span>
+        </a>
+      }
+    </div>
+  }
+</div>

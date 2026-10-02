@@ -5,6 +5,7 @@ import { myDetailsResolver } from './core/guards/my-details.resolver';
 import { registerGuard } from './core/guards/register.guard';
 
 export const routes: Routes = [
+  // ── Authentication Layout & Child Pages ──
   {
     path: '',
     loadComponent: () =>
@@ -50,6 +51,7 @@ export const routes: Routes = [
     ],
   },
 
+  // ── Admin Dashboard Layout & Child Pages ──
   {
     path: 'dashboard',
     loadComponent: () =>
@@ -81,6 +83,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'subcategories',
+        loadComponent: () =>
+          import('./pages/subcategories-management/subcategories-management.component').then(
+            (c) => c.SubcategoriesManagementComponent
+          ),
+      },
+      {
+        path: 'brands',
+        loadComponent: () =>
+          import('./pages/brands-management/brands-management.component').then(
+            (c) => c.BrandsManagementComponent
+          ),
+      },
+      {
         path: 'orders',
         loadComponent: () =>
           import('./pages/orders-management/orders-management.component').then(
@@ -104,6 +120,7 @@ export const routes: Routes = [
     ],
   },
 
+  // ── User Layout & Customer Pages ──
   {
     path: '',
     loadComponent: () =>
@@ -121,6 +138,12 @@ export const routes: Routes = [
         path: 'cart',
         loadComponent: () =>
           import('./pages/cart/cart.component').then((c) => c.CartComponent),
+        canActivate: [authGuard],
+      },
+      {
+        path: 'wishlist',
+        loadComponent: () =>
+          import('./pages/wishlist/wishlist.component').then((c) => c.WishlistComponent),
         canActivate: [authGuard],
       },
       {
@@ -143,6 +166,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/category/category.component').then(
             (c) => c.CategoryComponent
+          ),
+      },
+      {
+        path: 'categories/:id',
+        loadComponent: () =>
+          import('./pages/category-detail/category-detail.component').then(
+            (c) => c.CategoryDetailComponent
+          ),
+      },
+      {
+        path: 'brands',
+        loadComponent: () =>
+          import('./pages/brands/brands.component').then(
+            (c) => c.BrandsComponent
+          ),
+      },
+      {
+        path: 'brands/:id',
+        loadComponent: () =>
+          import('./pages/brand-products/brand-products.component').then(
+            (c) => c.BrandProductsComponent
           ),
       },
       {

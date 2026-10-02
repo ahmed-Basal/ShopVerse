@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '../apiRoot/baseUrl';
 import { ProductModel } from '../models/products/product.model';
 import { ProductListResponseModel } from '../models/products/product-list-response.model';
@@ -32,7 +33,7 @@ export class ProductsService {
       title: prod.title,
       price: prod.price,
       description: prod.description || '',
-      image: prod.imageCover || '',
+      imageCover: prod.imageCover || '',
       brand: brandName,
       model: prod.slug || 'standard',
       color: prod.colors && prod.colors.length > 0 ? prod.colors[0] : 'Default',
@@ -42,31 +43,75 @@ export class ProductsService {
         : 10,
       popular: (prod.sold || 0) > 25,
       isAddedToCart: false,
+      ratingsAverage: prod.ratingsAverage,
+      ratingsQuantity: prod.ratingsQuantity,
+      _id: prod._id,
     };
   }
 
   allProducts(): Observable<ProductListResponseModel> {
-    return this._httpClient.get<ProductListResponseModel>(API_ENDPOINTS.PRODUCTS);
+    return this._httpClient.get<any>(API_ENDPOINTS.PRODUCTS).pipe(
+      map((res) => ({
+        ...res,
+        products: (res.data || []).map((p: any) => this.mapProductToFrontend(p)),
+        data: res.data || [],
+      }))
+    );
   }
 
-  getProducts(queryParams: { keyword?: string; sort?: string; page?: number; limit?: number }): Observable<ProductListResponseModel> {
+  getProducts(queryParams: {
+    keyword?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+    categoryId?: string;
+    brandId?: string;
+    subCategoryId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  }): Observable<ProductListResponseModel> {
     let params = new HttpParams();
     if (queryParams.keyword) params = params.set('keyword', queryParams.keyword);
     if (queryParams.sort) params = params.set('sort', queryParams.sort);
     if (queryParams.page) params = params.set('page', queryParams.page.toString());
     if (queryParams.limit) params = params.set('limit', queryParams.limit.toString());
+    if (queryParams.categoryId) params = params.set('categoryId', queryParams.categoryId);
+    if (queryParams.brandId) params = params.set('brandId', queryParams.brandId);
+    if (queryParams.subCategoryId) params = params.set('subCategoryId', queryParams.subCategoryId);
+    if (queryParams.minPrice) params = params.set('minPrice', queryParams.minPrice.toString());
+    if (queryParams.maxPrice) params = params.set('maxPrice', queryParams.maxPrice.toString());
 
-    return this._httpClient.get<ProductListResponseModel>(API_ENDPOINTS.PRODUCTS, { params });
+    return this._httpClient.get<any>(API_ENDPOINTS.PRODUCTS, { params }).pipe(
+      map((res) => ({
+        ...res,
+        products: (res.data || []).map((p: any) => this.mapProductToFrontend(p)),
+        data: res.data || [],
+      }))
+    );
   }
 
   searchProducts(keyword: string): Observable<ProductListResponseModel> {
-    return this._httpClient.get<ProductListResponseModel>(API_ENDPOINTS.PRODUCTS, {
+    return this._httpClient.get<any>(API_ENDPOINTS.PRODUCTS, {
       params: { keyword }
-    });
+    }).pipe(
+      map((res) => ({
+        ...res,
+        products: (res.data || []).map((p: any) => this.mapProductToFrontend(p)),
+        data: res.data || [],
+      }))
+    );
   }
 
   getDetails(id: string): Observable<ProductDetailsResponseModel> {
-    return this._httpClient.get<ProductDetailsResponseModel>(`${API_ENDPOINTS.PRODUCTS}/${id}`);
+    return this._httpClient.get<any>(`${API_ENDPOINTS.PRODUCTS}/${id}`).pipe(
+      map((res) => ({
+        ...res,
+        data: {
+          ...res.data,
+          product: this.mapProductToFrontend(res.data.product ?? res.data),
+        },
+      }))
+    );
   }
 
   applyProductCoupon(productId: string, couponCode: string): Observable<ProductCouponResponseModel> {
@@ -75,8 +120,14 @@ export class ProductsService {
 
   // Admin CRUD methods
   getAllProductsAdmin(page: number = 1, limit: number = 10): Observable<ProductListResponseModel> {
-    return this._httpClient.get<ProductListResponseModel>(
+    return this._httpClient.get<any>(
       `${API_ENDPOINTS.ADMIN_PRODUCTS}?page=${page}&limit=${limit}`
+    ).pipe(
+      map((res) => ({
+        ...res,
+        products: (res.data || []).map((p: any) => this.mapProductToFrontend(p)),
+        data: res.data || [],
+      }))
     );
   }
 

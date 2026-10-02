@@ -3,7 +3,7 @@ const { check, body } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 
 exports.getSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invalid subcategory id format"),
+  check("id").notEmpty().withMessage("Invalid subcategory id format"),
   validatorMiddleware,
 ];
 
@@ -21,14 +21,12 @@ exports.createSubCategoryValidator = [
     }),
   check("category")
     .notEmpty()
-    .withMessage("SubCategory must belong to a category")
-    .isMongoId()
-    .withMessage("Invalid category id format"),
+    .withMessage("SubCategory must belong to a category"),
   validatorMiddleware,
 ];
 
 exports.updateSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invalid subcategory id format"),
+  check("id").notEmpty().withMessage("Invalid subcategory id format"),
   body("name")
     .optional()
     .custom((val, { req }) => {
@@ -36,13 +34,11 @@ exports.updateSubCategoryValidator = [
       return true;
     }),
   body("category")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid category id format"),
+    .optional(),
   validatorMiddleware,
 ];
 
 exports.deleteSubCategoryValidator = [
-  check("id").isMongoId().withMessage("Invalid subcategory id format"),
+  check("id").notEmpty().withMessage("Invalid subcategory id format"),
   validatorMiddleware,
 ];

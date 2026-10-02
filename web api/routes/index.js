@@ -14,6 +14,7 @@ const apiKeyRoute = require("./apiKeyRoute");
 const notificationRoute = require("./notificationRoute");
 
 const dashboardRoute = require("./dashboardRoute");
+const uploadRoute = require("./uploadRoute");
 
 const mountRoutes = (app) => {
   app.use("/api/v1/categories", categoryRoute);
@@ -30,6 +31,7 @@ const mountRoutes = (app) => {
   app.use("/api/v1/orders", orderRoute);
   app.use("/api/v1/apikeys", apiKeyRoute);
   app.use("/api/v1/notifications", notificationRoute);
+  app.use("/api/v1/upload", uploadRoute);
 
   app.use("/api/v1/dashboard", dashboardRoute);
 };

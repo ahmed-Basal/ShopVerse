@@ -8,11 +8,13 @@ import { NotifecationsService } from '../../core/service/notifecations.service';
 import { CategoryModel } from '../../core/models/category/category.model';
 import { SubcategoryModel } from '../../core/models/subcategory/subcategory.model';
 import { SubcategoryFormComponent } from '../../shared/subcategory-form/subcategory-form.component';
+import { ImageUploaderComponent, ImageUploadEvent } from '../../shared/image-uploader/image-uploader.component';
+import { ImageUrlPipe } from '../../core/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-categories-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SubcategoryFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, SubcategoryFormComponent, ImageUploaderComponent, ImageUrlPipe],
   templateUrl: './categories-management.component.html',
   styleUrl: './categories-management.component.scss',
 })
@@ -25,6 +27,7 @@ export class CategoriesManagementComponent implements OnInit {
   isEditMode = false;
   currentCategoryId = '';
   categoryImageFile: File | null = null;
+  categoryImageUrl: string = '';
   categoryImagePreview: string | null = null;
   loading = false;
   showForm = false;
@@ -107,6 +110,7 @@ export class CategoriesManagementComponent implements OnInit {
     this.isEditMode = false;
     this.currentCategoryId = '';
     this.categoryImageFile = null;
+    this.categoryImageUrl = '';
     this.categoryImagePreview = null;
     this.showForm = true;
     this.initForm();
@@ -116,6 +120,7 @@ export class CategoriesManagementComponent implements OnInit {
     this.isEditMode = true;
     this.currentCategoryId = cat._id;
     this.categoryImageFile = null;
+    this.categoryImageUrl = cat.image || '';
     this.categoryImagePreview = cat.image || null;
     this.showForm = true;
     this.loading = true;
@@ -140,19 +145,18 @@ export class CategoriesManagementComponent implements OnInit {
     this.isEditMode = false;
     this.currentCategoryId = '';
     this.categoryImageFile = null;
+    this.categoryImageUrl = '';
     this.categoryImagePreview = null;
     this.categoryForm.reset();
   }
 
-  onCategoryImageChange(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.categoryImageFile = file;
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.categoryImagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+  onCategoryImageChange(event: ImageUploadEvent): void {
+    if (event.mode === 'file') {
+      this.categoryImageFile = event.file;
+      this.categoryImageUrl = '';
+    } else {
+      this.categoryImageUrl = event.url;
+      this.categoryImageFile = null;
     }
   }
 
@@ -168,6 +172,8 @@ export class CategoriesManagementComponent implements OnInit {
     formData.append('name', this.categoryForm.get('name')?.value);
     if (this.categoryImageFile) {
       formData.append('image', this.categoryImageFile);
+    } else if (this.categoryImageUrl) {
+      formData.append('image', this.categoryImageUrl);
     }
 
     if (this.isEditMode) {

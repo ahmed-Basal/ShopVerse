@@ -1,9 +1,15 @@
 const asyncHandler = require("express-async-handler");
+const ApiError = require("../utils/apiError");
 
 // Maintain active SSE client connections
 let clients = [];
 
 exports.notificationStream = asyncHandler(async (req, res, next) => {
+  const userId = (req.user?.id || req.user?._id || "").toString();
+  if (!userId) {
+    return next(new ApiError("User not authenticated", 401));
+  }
+
   // Set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -11,7 +17,6 @@ exports.notificationStream = asyncHandler(async (req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.flushHeaders();
 
-  const userId = req.user._id.toString();
   const newClient = {
     id: userId,
     res,

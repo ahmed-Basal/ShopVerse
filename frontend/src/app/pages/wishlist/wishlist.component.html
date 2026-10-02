@@ -1,0 +1,92 @@
+<div class="min-h-screen py-10 max-w-7xl mx-auto px-4">
+  <!-- Header -->
+  <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <i class="pi pi-heart-fill text-xs"></i> Saved Items
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-white">My Wishlist</h1>
+      <p class="text-xs md:text-sm text-ocean-300 mt-1">
+        Manage the products you've saved for later.
+      </p>
+    </div>
+    @if (wishlistItems.length > 0) {
+      <div class="text-xs font-bold text-ocean-300">
+        {{ wishlistItems.length }} item{{ wishlistItems.length > 1 ? 's' : '' }} saved
+      </div>
+    }
+  </div>
+
+  <!-- States -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-24 gap-3">
+      <i class="pi pi-spin pi-spinner text-4xl text-blue"></i>
+      <p class="text-sm text-ocean-300">Loading your saved items...</p>
+    </div>
+  } @else if (error) {
+    <div class="max-w-md mx-auto p-6 rounded-2xl bg-ocean-800 border border-red-500/30 text-center">
+      <i class="pi pi-exclamation-triangle text-3xl text-red-400 mb-2"></i>
+      <p class="text-sm text-ocean-200 mb-4">{{ error }}</p>
+      <button (click)="fetchWishlist()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-blue text-white hover:bg-blue-hover">
+        Retry
+      </button>
+    </div>
+  } @else if (wishlistItems.length === 0) {
+    <div class="max-w-md mx-auto p-12 rounded-2xl bg-ocean-800/60 border border-ocean-500/50 text-center">
+      <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-heart text-2xl text-red-400"></i>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-1">Your wishlist is empty</h3>
+      <p class="text-xs text-ocean-300 mb-6">Explore the catalog and save the items you love.</p>
+      <a routerLink="/products"
+         class="px-6 py-2.5 text-xs font-semibold rounded-xl bg-blue text-white hover:bg-blue-hover shadow-blue inline-flex items-center gap-2">
+        <span>Explore Catalog</span>
+        <i class="pi pi-arrow-right text-[10px]"></i>
+      </a>
+    </div>
+  } @else {
+    <!-- Wishlist Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (product of wishlistItems; track (product.id || product._id)) {
+        <div class="group relative flex flex-col rounded-2xl bg-ocean-800 border border-ocean-500/60 hover:border-blue/50 overflow-hidden shadow-card transition-all duration-300">
+          <div class="relative w-full h-52 bg-white flex items-center justify-center p-4 overflow-hidden cursor-pointer"
+               [routerLink]="['/details', (product.id || product._id)]">
+            <img
+              [src]="product.imageCover | imageUrl"
+              (error)="img.src = '/assets/product-1.jpg'"
+              #img
+              [alt]="product.title"
+              class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+            />
+            <!-- Remove from wishlist button -->
+            <button (click)="removeFromWishlist(product.id || product._id)"
+                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-ocean-900/80 backdrop-blur-md border border-ocean-500/50 text-red-400 hover:text-red-300 flex items-center justify-center transition-all hover:scale-110 cursor-pointer"
+                    title="Remove from Wishlist">
+              <i class="pi pi-trash text-xs"></i>
+            </button>
+          </div>
+
+          <div class="flex-1 p-4 flex flex-col justify-between space-y-3">
+            <div>
+              <h3 class="text-sm font-bold text-white line-clamp-2 mt-1 hover:text-blue transition-colors cursor-pointer"
+                  [routerLink]="['/details', (product.id || product._id)]">
+                {{ product.title }}
+              </h3>
+              <div class="text-base font-extrabold text-white mt-2">
+                ${{ product.price }}
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-ocean-600/40">
+              <button (click)="moveToCart(product)"
+                      class="w-full py-2 rounded-xl bg-blue text-white text-xs font-semibold shadow-sm hover:bg-blue-hover transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="pi pi-shopping-cart text-xs"></i>
+                <span>Add to Cart</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -41,6 +41,6 @@ exports.createApiKeyValidator = [
 ];
 
 exports.deleteApiKeyValidator = [
-  check("id").isMongoId().withMessage("Invalid API key id format"),
+  check("id").notEmpty().withMessage("Invalid API key id format"),
   validatorMiddleware,
 ];

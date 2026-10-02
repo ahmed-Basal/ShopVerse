@@ -4,14 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "node server.js",
-    "start": "NODE_ENV=production node server.js"
+    "start:dev": "nodemon server.js",
+    "start": "node server.js",
+    "db:generate": "./node_modules/.bin/prisma generate",
+    "db:migrate": "./node_modules/.bin/prisma migrate dev --name init",
+    "db:push": "./node_modules/.bin/prisma db push",
+    "db:studio": "./node_modules/.bin/prisma studio",
+    "db:seed": "node utils/dummyData/seeder.js -i",
+    "db:destroy": "node utils/dummyData/seeder.js -d",
+    "db:reset": "node utils/dummyData/seeder.js -r"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "bullmq": "^6.3.11",
     "colors": "^1.4.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -19,11 +27,16 @@
     "express": "^4.17.1",
     "express-async-handler": "^1.2.0",
     "express-validator": "^6.14.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.13",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "nodemailer": "^6.7.2",
+    "pg": "^8.23.1",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
     "resend": "^6.17.2",
     "sharp": "^0.29.3",
     "slugify": "^1.6.3",
@@ -31,6 +44,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@prisma/client": "^5.22.0",
     "eslint": "^8.5.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.3.0",
@@ -40,9 +54,10 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
     "nodemon": "^2.0.15",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "prisma": "^5.22.0"
   },
   "engines": {
-    "node": "^16.13.0"
+    "node": ">=16.0.0"
   }
 }

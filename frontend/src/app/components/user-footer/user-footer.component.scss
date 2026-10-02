@@ -1,21 +1,96 @@
-/* ============================================================
-   USER-FOOTER — Dark Theme
-   ============================================================ */
-.copyright-area {
+.site-footer {
   background: var(--clr-bg-elevated);
+  color: var(--clr-text-secondary);
+  padding: 3.5rem 0 2rem;
   border-top: 1px solid var(--clr-border);
-  padding: 20px 0;
-  text-align: center;
+  margin-top: auto;
 
-  p {
-    color: var(--clr-text-muted);
-    font-size: 0.8rem;
-    font-weight: 400;
-    letter-spacing: 0.02em;
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
   }
 
-  .text-main {
-    color: var(--clr-accent-light);
-    font-weight: 600;
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+  }
+
+  .footer-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 0.7rem;
+    }
+
+    a {
+      color: var(--clr-text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        color: var(--clr-accent-light);
+        padding-left: 3px;
+      }
+    }
+  }
+
+  .footer-contact {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.7rem;
+      font-size: 0.875rem;
+      color: var(--clr-text-secondary);
+
+      i {
+        color: var(--clr-accent-light);
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      li {
+        justify-content: center;
+      }
+    }
+  }
+
+  .footer-divider {
+    border: none;
+    border-top: 1px solid var(--clr-border);
+    margin: 0 0 1.5rem;
+  }
+
+  .copyright-area {
+    .copyright-text {
+      text-align: center;
+      margin: 0;
+      font-size: 0.825rem;
+      color: var(--clr-text-muted);
+    }
   }
 }
